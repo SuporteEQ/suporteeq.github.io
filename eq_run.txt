@@ -11,5 +11,6 @@ set bot_chat_id="183148731"
 
 
 cls
-rem curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|run"
+curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|run"
+echo %computername% START %date% %time% >> \\10.30.225.12\suporte\logs\eq_run.txt
 
