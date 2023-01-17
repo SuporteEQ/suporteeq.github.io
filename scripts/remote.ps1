@@ -8,34 +8,19 @@ $cred = New-Object System.Management.Automation.PSCredential ("administrador", $
 $RemoteComputers = Get-Content .\Computers.txt
 
 $scriptblock = { 
-    #echo $env:COMPUTERNAME ; 
-    #$ipv4 = (Get-NetIPAddress | Where-Object { $_.AddressState -eq "Preferred" -and $_.ValidLifetime -lt "24:00:00" }).IPAddress; 
-    #echo $ipv4; 
-    #Tasklist
-    #Stop-process -name fliqlo.scr -Force
-    #Stop-process -name chrome -Force
-    
-    #query session 
-    
-    ##2 is the session id get from tasklist
-    #$session = tasklist /fo CSV | findstr RDP ; $session = $session.Split(",")[3] ;
-
-    #query session $user;
-    #$sessions = query session $user;
-    #return $sessions[1].split(" ", [System.StringSplitOptions]::RemoveEmptyEntries)[2];
-    #psexec -s -i 2 notepad.exe -accepteula 
-
-    #msg *  "Boa noite, o lab fechará às 21h"
-    #copy \\10.10.10.4\public\rename-computer.ps1 c:\suporte-eq
-
-    
-    #psexec -s -i 65536 "notepad.exe" -accepteula 
-    #shutdown.exe /r /t 0
+    if (Test-Connection -BufferSize 32 -Count 1 -ComputerName 192.168.0.41 -Quiet){
+        echo "`t On-line"
+        shutdown /r /t 0
+        echo "`t Desligando..."
+    } else {
+        echo "`t Off-line"
+    }
 }
 
 
 ForEach ($Computer in $RemoteComputers)
 {
+    echo ""
     echo $Computer
     Try
         {
@@ -43,12 +28,14 @@ ForEach ($Computer in $RemoteComputers)
             Invoke-Command -Credential $cred -ComputerName $Computer -ScriptBlock $scriptblock
             #Invoke-Command -ComputerName $Computer -ScriptBlock {Get-ChildItem "C:\Program Files"} -ErrorAction Stop
             #Invoke-Command -ComputerName Server01, Server02 -FilePath c:\Scripts\DiskCollect.ps1
-            echo Done
+            #echo "`t Done"
         }
     Catch
         {
-            echo Error
             Add-Content Unavailable-Computers.txt $Computer
+            #echo Error
+            echo "`t Error"
+
         }
 }
 
