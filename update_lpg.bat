@@ -31,5 +31,7 @@ echo Baixando e substituindo arquivos na pasta System32...
 powershell -Command "Invoke-WebRequest -Uri 'https://suporteeq.github.io/eq.cmd' -OutFile 'C:\Windows\System32\eq.cmd'"
 powershell -Command "Invoke-WebRequest -Uri 'https://suporteeq.github.io/CMS.cmd' -OutFile 'C:\Windows\System32\CMS.cmd'"
 
+
 echo Concluído.
 pause
+echo 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\call_lpg.bat'|clip
