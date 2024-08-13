@@ -19,6 +19,7 @@ del /f /q "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\ApagarDo
 del /f /q "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\EQ1.bat"
 del /f /q "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\EQ2.bat"
 del /f /q "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\startup.bat"
+del /f /q "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\run.bat"
 
 :: Baixa o novo arquivo na pasta StartUp
 echo Baixando novo arquivo para a pasta StartUp...
