@@ -38,3 +38,6 @@ echo "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\call_lpg.bat"
 call "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\call_lpg.bat"
 call "C:\Windows\System32\eq.cmd"
 call "C:\Windows\System32\CMS.cmd"
+pause
+pause
+shutdown /r /t 10
