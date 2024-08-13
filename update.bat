@@ -35,10 +35,9 @@ powershell -Command "Invoke-WebRequest -Uri 'https://suporteeq.github.io/CMS.cmd
 
 echo Concluído.
 pause
-echo "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\call_lpg.bat"|clip
-call "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\call_lpg.bat"
-call "C:\Windows\System32\eq.cmd"
-call "C:\Windows\System32\CMS.cmd"
-pause
-pause
-shutdown /r /t 10
+rem echo "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\call_lpg.bat"|clip
+rem call "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\call_lpg.bat"
+rem call "C:\Windows\System32\eq.cmd"
+rem call "C:\Windows\System32\CMS.cmd"
+rem pause
+rem shutdown /r /t 10
