@@ -6,7 +6,7 @@ rem TIMEOUT /t 1800
 REM :: Defina os limites de execucao
 set TARGET_DATE=20240814
 set START_TIME=17:00
-set END_TIME=19:00
+set END_TIME=20:00
 
 REM :: Defina o caminho da pasta e do arquivo
 set "folder=C:\suporte\scr"
