@@ -55,6 +55,7 @@ if "%CURRENT_DATE%"=="%TARGET_DATE%" (
 
 :exec_comando
 :: Coloque aqui o comando que você deseja executar
+echo Hoje SIM
 curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Uptime:%UPTIME%|Exec:Reboot*ate*21h"  > NUL 2>&1
 goto fim
 
