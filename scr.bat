@@ -5,15 +5,25 @@ rem TIMEOUT /t 1800
 
 rem C:\Windows\System32\scrnsave.scr 
 
-rem rundll32.exe powrprof.dll,SetSuspendState 0,1,0
-rem timeout /t 10800 /nobreak > NUL
-rem shutdown /h
+:: Defina o caminho da pasta e do arquivo
+set "folder=C:\suporte\scr"
+set "file=%folder%\fliqlo.scr"
+set "url=https://suporteeq.github.io/scr/fliqlo.scr"
 
-cls
-set bot_api="5778710873:AAEBZBIN_ZTBsRMJcdpEBdBu5rjiPlwqENU"
+:: Verifica se a pasta existe
+if not exist "%folder%" (
+    echo A pasta %folder% nao existe. Criando a pasta...
+    mkdir "%folder%"
+)
 
-cls
-set bot_chat_id="183148731"
+:: Verifica se o arquivo existe
+if not exist "%file%" (
+    echo O arquivo %file% nao existe. Baixando o arquivo...
+    curl -o "%file%" "%url%"
+)
 
-cls
-curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%"
+if not exist "%file%" (
+    rundll32.exe powrprof.dll,SetSuspendState 0,1,0
+) else (
+    C:\Windows\explorer.exe "%file%"
+)
