@@ -1,1 +1,0 @@
-Powershell -File c:\suporte-eq\bin\rename-computer-lpg.ps1
