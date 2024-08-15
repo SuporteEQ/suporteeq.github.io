@@ -58,18 +58,19 @@ if "%CURRENT_DATE%"=="%TARGET_DATE%" (
 :exec_comando
 :: Coloque aqui o comando que você deseja executar
 echo Hoje SIM
-curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Uptime:%UPTIME%|Exec:Reboot*ate*21h"  > NUL 2>&1
+curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Started:%LASTBOOT_DATE_FORMATTED%+%LASTBOOT_TIME_FORMATTED%|Exec:Reboot*ate*21h"  > NUL 2>&1
 goto fim
 
 :fora_do_horario
 echo Agora NAO
-curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Uptime:%UPTIME%|Exec:HoraErrada"  > NUL 2>&1
+curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Started:%LASTBOOT_DATE_FORMATTED%+%LASTBOOT_TIME_FORMATTED%|Exec:HoraErrada"  > NUL 2>&1
+
 goto fim
 
 :data_errada
 echo Hoje NAO
-curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Uptime:%UPTIME%|Exec:DiaErrado"  > NUL 2>&1
+curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Started:%LASTBOOT_DATE_FORMATTED%+%LASTBOOT_TIME_FORMATTED%|Exec:DiaErrado"  > NUL 2>&1
 goto fim
 
 :fim
-rem pause
+pause
