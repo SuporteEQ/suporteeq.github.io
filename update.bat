@@ -24,7 +24,7 @@ del /f /q "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\run.bat"
 :: Baixa o novo arquivo na pasta StartUp
 echo Baixando novo arquivo para a pasta StartUp...
 
-powershell -Command "Invoke-WebRequest -Uri 'https://suporteeq.github.io/call_lpg.bat' -OutFile 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\call_lpg.bat'"
+powershell -Command "Invoke-WebRequest -Uri 'https://suporteeq.github.io/call_infoladeq.bat' -OutFile 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\call_infoladeq.bat'"
 
 :: Baixa e substitui arquivos na pasta System32
 echo Baixando e substituindo arquivos na pasta System32...
@@ -35,8 +35,8 @@ powershell -Command "Invoke-WebRequest -Uri 'https://suporteeq.github.io/CMS.cmd
 
 echo Concluído.
 pause
-rem echo "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\call_lpg.bat"|clip
-rem call "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\call_lpg.bat"
+rem echo "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\call_infoladeq.bat"|clip
+rem call "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\call_infoladeq.bat"
 rem call "C:\Windows\System32\eq.cmd"
 rem call "C:\Windows\System32\CMS.cmd"
 rem pause
