@@ -76,7 +76,7 @@ goto fim
 
 :fim
 cls
-echo --------------------------
-echo siga @equfrj no instagram
-echo --------------------------
-timeout /t 60
+rem echo --------------------------
+rem echo siga @equfrj no instagram
+rem echo --------------------------
+rem timeout /t 60
