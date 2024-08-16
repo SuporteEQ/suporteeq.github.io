@@ -21,8 +21,8 @@ set CURRENT_HOUR=%CURRENT_DATETIME:~8,2%
 set CURRENT_MIN=%CURRENT_DATETIME:~10,2%
 set CURRENT_TIME=%CURRENT_HOUR%:%CURRENT_MIN%
 
-echo Dia atual: %CURRENT_DATE%
-echo Hora atual: %CURRENT_HOUR%:%CURRENT_MIN%
+rem echo Dia atual: %CURRENT_DATE%
+rem echo Hora atual: %CURRENT_HOUR%:%CURRENT_MIN%
 
 
 
@@ -59,18 +59,18 @@ if "%CURRENT_DATE%"=="%TARGET_DATE%" (
 
 :exec_comando
 :: Coloque aqui o comando que você deseja executar
-echo Hoje SIM
+rem echo Hoje SIM
 curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Started:%LASTBOOT_DATE_FORMATTED%+%LASTBOOT_TIME_FORMATTED%|Exec:Reboot*ate*21h"  > NUL 2>&1
 goto fim
 
 :fora_do_horario
-echo Agora NAO
+rem echo Agora NAO
 curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Started:%LASTBOOT_DATE_FORMATTED%+%LASTBOOT_TIME_FORMATTED%|Exec:HoraErrada"  > NUL 2>&1
 
 goto fim
 
 :data_errada
-echo Hoje NAO
+rem echo Hoje NAO
 curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Started:%LASTBOOT_DATE_FORMATTED%+%LASTBOOT_TIME_FORMATTED%|Exec:DiaErrado"  > NUL 2>&1
 goto fim
 
