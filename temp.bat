@@ -6,9 +6,9 @@ setlocal
 
 REM psexec.exe -accepteula -i -u suporte -p SENHA c:\suporte-eq\bin\...bat && cls
 
-set TARGET_DATE=20240814
+set TARGET_DATE=20240816
 set START_TIME=17:00
-set END_TIME=21:00
+set END_TIME=19:00
 
 REM :: Notificacao via telegram
 set bot_api="5778710873:AAEBZBIN_ZTBsRMJcdpEBdBu5rjiPlwqENU"
