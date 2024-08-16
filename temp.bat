@@ -38,7 +38,7 @@ set LASTBOOT_DATE_FORMATTED=%LASTBOOT_DATE:~6,2%/%LASTBOOT_DATE:~4,2%/%LASTBOOT_
 set LASTBOOT_TIME_FORMATTED=%LASTBOOT_TIME:~0,2%:%LASTBOOT_TIME:~2,2%:%LASTBOOT_TIME:~4,2%
 
 :: Exibe o tempo de atividade desde a última inicializacao
-echo O sistema foi inicializado em: %LASTBOOT_DATE_FORMATTED% %LASTBOOT_TIME_FORMATTED%
+REM echo O sistema foi inicializado em: %LASTBOOT_DATE_FORMATTED% %LASTBOOT_TIME_FORMATTED%
 
 :: Usa PowerShell para calcular o uptime
 for /f %%u in ('powershell -command "(get-date) - (gcim Win32_OperatingSystem).LastBootUpTime"') do set UPTIME=%%u
