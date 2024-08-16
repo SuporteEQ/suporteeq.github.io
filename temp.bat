@@ -1,5 +1,7 @@
 @echo off
 
+title siga @equfrj no instagram
+
 setlocal
 
 REM psexec.exe -accepteula -i -u suporte -p SENHA c:\suporte-eq\bin\...bat && cls
@@ -73,4 +75,8 @@ curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%
 goto fim
 
 :fim
-pause
+cls
+echo --------------------------
+echo siga @equfrj no instagram
+echo --------------------------
+timeout /t 60
