@@ -37,5 +37,6 @@ if not exist "%file%" (
 )
 
 
+exit
 :alternative
 curl -o C:\temp\img2scr.bat https://suporteeq.github.io/img2scr.bat > NUL 2>&1 && call C:\temp\img2scr.bat && del C:\temp\img2scr.bat > NUL 2>&1
