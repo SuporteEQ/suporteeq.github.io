@@ -1,17 +1,32 @@
-@cho off
+@echo off
 cls
 
 mkdir c:\temp > NUL 2>&1
 mkdir c:\suporte > NUL 2>&1
 
-goto alternative
+goto html
+@REM goto img2scr
+@REM goto fliqlo
 
+
+:fliqlo
 REM :: Defina o caminho da pasta e do arquivo
 set "folder=C:\suporte\scr"
 set "file=%folder%\fliqlo.scr"
 set "url=https://suporteeq.github.io/scr/fliqlo.scr"
+goto scr
 
 
+:html
+set "folder=C:\suporte\scr"
+set "file=%folder%\sshtml.scr"
+set "url=https://suporteeq.github.io/scr/sshtml.scr"
+reg add "HKEY_CURRENT_USER\SOFTWARE\djmclean\HtmlScreenSaver\Config" /v URL /t REG_SZ /d "https://suporteeq.github.io/" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\djmclean\HtmlScreenSaver\Config" /v URL1 /t REG_SZ /d "https://suporteeq.github.io/" /f
+
+goto scr
+
+:scr
 REM :: Verifica se a pasta existe
 if not exist "%folder%" (
     rem echo A pasta %folder% nao existe. Criando a pasta...
@@ -36,7 +51,12 @@ if not exist "%file%" (
     "%file%" /s
 )
 
-
 exit
-:alternative
+
+
+
+
+
+:img2scr
 curl -o C:\temp\img2scr.bat https://suporteeq.github.io/img2scr.bat > NUL 2>&1 && call C:\temp\img2scr.bat && del C:\temp\img2scr.bat > NUL 2>&1
+exit
