@@ -21,8 +21,8 @@ goto scr
 set "folder=C:\suporte\scr"
 set "file=%folder%\sshtml.scr"
 set "url=https://suporteeq.github.io/scr/sshtml.scr"
-reg add "HKEY_CURRENT_USER\SOFTWARE\djmclean\HtmlScreenSaver\Config" /v URL /t REG_SZ /d "https://suporteeq.github.io/" /f
-reg add "HKEY_CURRENT_USER\SOFTWARE\djmclean\HtmlScreenSaver\Config" /v URL1 /t REG_SZ /d "https://suporteeq.github.io/" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\djmclean\HtmlScreenSaver\Config" /v URL /t REG_SZ /d "https://suporteeq.github.io/scr/index.html" /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\djmclean\HtmlScreenSaver\Config" /v URL1 /t REG_SZ /d "https://suporteeq.github.io/scr/index.html" /f
 
 goto scr
 
