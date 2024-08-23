@@ -1,10 +1,10 @@
 @cho off
 cls
 
-goto alternative
-
 mkdir c:\temp > NUL 2>&1
 mkdir c:\suporte > NUL 2>&1
+
+goto alternative
 
 REM :: Defina o caminho da pasta e do arquivo
 set "folder=C:\suporte\scr"
