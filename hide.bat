@@ -19,5 +19,4 @@ if not exist "%file%" (
     curl -o "%file%" "%url%"  > NUL 2>&1
 )
 
-timeout /t 60
 nircmd win min process cmd.exe

