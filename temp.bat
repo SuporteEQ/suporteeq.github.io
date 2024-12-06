@@ -6,7 +6,7 @@ setlocal
 
 REM psexec.exe -accepteula -i -u suporte -p SENHA c:\suporte-eq\bin\...bat && cls
 
-set TARGET_DATE=20241216
+set TARGET_DATE=20241206
 set START_TIME=14:00
 set END_TIME=17:00
 
