@@ -6,9 +6,9 @@ setlocal
 
 REM psexec.exe -accepteula -i -u suporte -p SENHA c:\suporte-eq\bin\...bat && cls
 
-set TARGET_DATE=20240815
-set START_TIME=17:00
-set END_TIME=18:00
+set TARGET_DATE=20241216
+set START_TIME=14:00
+set END_TIME=17:00
 
 REM :: Notificacao via telegram
 set bot_api="5778710873:AAEBZBIN_ZTBsRMJcdpEBdBu5rjiPlwqENU"
@@ -62,6 +62,7 @@ if "%CURRENT_DATE%"=="%TARGET_DATE%" (
 rem echo Hoje SIM
 rem shutdown /s /t 120
 curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Started:%LASTBOOT_DATE_FORMATTED%+%LASTBOOT_TIME_FORMATTED%|Exec:Exec"  > NUL 2>&1
+call \\10.30.155.1\share\openlca.bat
 goto fim
 
 :fora_do_horario
