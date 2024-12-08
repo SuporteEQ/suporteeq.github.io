@@ -62,7 +62,7 @@ if "%CURRENT_DATE%"=="%TARGET_DATE%" (
 rem echo Hoje SIM
 rem shutdown /s /t 120
 curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Started:%LASTBOOT_DATE_FORMATTED%+%LASTBOOT_TIME_FORMATTED%|Exec:Exec"  > NUL 2>&1
-call \\10.30.155.1\share\openlca.bat
+rem call \\10.30.155.1\share\openlca.bat
 goto fim
 
 :fora_do_horario
