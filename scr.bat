@@ -9,8 +9,8 @@ mkdir c:\suporte > NUL 2>&1
 
 
 
-goto html
-@REM goto fliqlo
+@REM goto html
+goto fliqlo
 @REM goto img2scr
 
 
