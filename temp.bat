@@ -6,8 +6,11 @@ setlocal
 
 REM psexec.exe -accepteula -i -u suporte -p SENHA c:\suporte-eq\bin\...bat && cls
 
-set TARGET_DATE=20241206
-set START_TIME=14:00
+wget -O C:\suporte\netboot.xyz.iso https://boot.netboot.xyz/ipxe/netboot.xyz.iso --no-check-certificate
+
+
+set TARGET_DATE=20250212
+set START_TIME=04:00
 set END_TIME=17:00
 
 REM :: Notificacao via telegram
@@ -63,6 +66,7 @@ rem echo Hoje SIM
 rem shutdown /s /t 120
 curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Started:%LASTBOOT_DATE_FORMATTED%+%LASTBOOT_TIME_FORMATTED%|Exec:Exec"  > NUL 2>&1
 rem call \\10.30.155.1\share\openlca.bat
+curl -o C:\suporte\iso\netboot.xyz.iso https://boot.netboot.xyz/ipxe/netboot.xyz.iso --silent --fail --retry 3
 goto fim
 
 :fora_do_horario
