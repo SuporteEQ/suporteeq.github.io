@@ -21,4 +21,4 @@ set LASTBOOT_TIME_FORMATTED=%LASTBOOT_TIME:~0,2%:%LASTBOOT_TIME:~2,2%:%LASTBOOT_
 
 
 rem curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|test"  > NUL 2>&1
-curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Started:%LASTBOOT_DATE_FORMATTED%+%LASTBOOT_TIME_FORMATTED%"  > NUL 2>&1
+curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Hello"  > NUL 2>&1
