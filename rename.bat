@@ -14,7 +14,9 @@ set /p ADDITIONAL_NAME=Digite o restante do nome do computador (LPG-):
 set NEW_COMPUTER_NAME=LPG-%ADDITIONAL_NAME%
 
 :: Renomeia o PC
-wmic computersystem where name="%COMPUTERNAME%" call rename name="%NEW_COMPUTER_NAME%"
+REM wmic computersystem where name="%COMPUTERNAME%" call rename name="%NEW_COMPUTER_NAME%"
+powershell -Command "Rename-Computer -NewName '%NEW_COMPUTER_NAME%' -Force"
+
 
 if %errorlevel%==0 (
     echo O computador foi renomeado para %NEW_COMPUTER_NAME%.

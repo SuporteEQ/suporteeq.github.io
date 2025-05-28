@@ -41,3 +41,5 @@ rem call "C:\Windows\System32\eq.cmd"
 rem call "C:\Windows\System32\CMS.cmd"
 rem pause
 rem shutdown /r /t 10
+
+echo %date% %time% >> c:\suporte\%~n0.txt

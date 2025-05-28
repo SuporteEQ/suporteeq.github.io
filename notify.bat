@@ -10,3 +10,5 @@ msg * Siga @equfrj no instagram
 @REM echo siga @equfrj no instagram
 @REM echo --------------------------
 @REM timeout /t 60
+
+echo %date% %time% >> c:\suporte\%~n0.txt

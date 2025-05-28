@@ -20,3 +20,4 @@ if not exist "%file%" (
 )
 
 nircmd win min process cmd.exe
+echo %date% %time% >> c:\suporte\%~n0.txt

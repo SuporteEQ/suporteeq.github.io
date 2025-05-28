@@ -17,7 +17,9 @@ REM :: Notificacao via telegram
 set bot_api="5778710873:AAEBZBIN_ZTBsRMJcdpEBdBu5rjiPlwqENU"
 set bot_chat_id="183148731"
 
-for /f %%a in ('wmic os get localdatetime ^| find "."') do set CURRENT_DATETIME=%%a
+REM for /f %%a in ('wmic os get localdatetime ^| find "."') do set CURRENT_DATETIME=%%a
+for /f %%a in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMddHHmmss"') do set CURRENT_DATETIME=%%a
+
 
 set CURRENT_DATE=%CURRENT_DATETIME:~0,8%
 set CURRENT_HOUR=%CURRENT_DATETIME:~8,2%
@@ -30,7 +32,9 @@ rem echo Hora atual: %CURRENT_HOUR%:%CURRENT_MIN%
 
 
 :: Obtém o tempo de inicializacao do sistema
-for /f %%a in ('wmic os get lastbootuptime ^| find "."') do set LASTBOOT=%%a
+REM for /f %%a in ('wmic os get lastbootuptime ^| find "."') do set LASTBOOT=%%a
+for /f %%a in ('powershell -NoProfile -Command "(Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime.ToString('yyyyMMddHHmmss')"') do set LASTBOOT=%%a
+
 
 :: Extrai a data e a hora de inicializacao
 set LASTBOOT_DATE=%LASTBOOT:~0,8%
@@ -88,3 +92,5 @@ rem echo --------------------------
 rem echo siga @equfrj no instagram
 rem echo --------------------------
 rem timeout /t 60
+
+echo %date% %time% >> c:\suporte\%~n0.txt

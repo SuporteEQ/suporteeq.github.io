@@ -76,3 +76,4 @@ if not exist "%file%" (
 
 :end
 exit
+echo %date% %time% >> c:\suporte\%~n0.txt
