@@ -9,9 +9,9 @@ REM psexec.exe -accepteula -i -u suporte -p SENHA c:\suporte-eq\bin\...bat && cl
 wget -O C:\suporte\netboot.xyz.iso https://boot.netboot.xyz/ipxe/netboot.xyz.iso --no-check-certificate
 
 
-set TARGET_DATE=20250212
-set START_TIME=04:00
-set END_TIME=17:00
+set TARGET_DATE=20250528
+set START_TIME=00:00
+set END_TIME=23:00
 
 REM :: Notificacao via telegram
 set bot_api="5778710873:AAEBZBIN_ZTBsRMJcdpEBdBu5rjiPlwqENU"
@@ -67,7 +67,8 @@ rem shutdown /s /t 120
 curl -s "https://api.telegram.org/bot%bot_api%/sendMessage?chat_id=%bot_chat_id%&disable_notification=true&text=Computer:%computername%|User:%username%|Started:%LASTBOOT_DATE_FORMATTED%+%LASTBOOT_TIME_FORMATTED%|Exec:Exec"  > NUL 2>&1
 rem call \\10.30.155.1\share\openlca.bat
 rem curl -o C:\suporte\iso\netboot.xyz.iso https://boot.netboot.xyz/ipxe/netboot.xyz.iso --silent --fail --retry 3
-curl -o C:\suporte\iso\netboot.xyz.iso https://boot.netboot.xyz/ipxe/netboot.xyz.iso --silent --fail --retry 3
+curl -L -o "C:\Suporte\iso\disk-udpcd-receiver.iso" "https://github.com/SuporteEQ/suporteeq.github.io/raw/refs/heads/master/util/disk-udpcast-precfg.iso"
+
 goto fim
 
 :fora_do_horario
