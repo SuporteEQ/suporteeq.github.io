@@ -1,12 +1,12 @@
 @echo off
 :hide
-curl -o c:\temp\hide.bat https://suporteeq.github.io/hide.bat > NUL 2>&1 && call c:\temp\hide.bat && del c:\temp\hide.bat > NUL 2>&1
+@REM curl -o c:\temp\hide.bat https://suporteeq.github.io/hide.bat > NUL 2>&1 && call c:\temp\hide.bat && del c:\temp\hide.bat > NUL 2>&1
 
-cls
-echo ==============================
-echo   Escola de Quimica da UFRJ
-echo ==============================
+@REM cls
+@REM echo ==============================
+@REM echo   Escola de Quimica da UFRJ
+@REM echo ==============================
 
-echo.
+@REM echo.
 
-echo %date% %time% >> c:\suporte\%~n0.txt
+@REM echo %date% %time% >> c:\suporte\%~n0.txt
