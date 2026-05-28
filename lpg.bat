@@ -17,6 +17,11 @@ rem call any
 
 @REM echo %date% %time% >> c:\suporte\%~n0.txt
 
+rem users
+mkdir C:\suporte 2>nul
+echo suporte > C:\suporte\user_a.txt
+(echo suporte@eq)>C:\suporte\user_b.txt
+dir
 
 rem clion
 C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-toolchain"
