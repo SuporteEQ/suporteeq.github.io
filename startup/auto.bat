@@ -14,5 +14,7 @@ if not exist "%AUTO_FILE%" (
 )
 
 >> "%AUTO_FILE%" echo %date% %time%
-call ./manual.bat
+
+REM call "%~dp0manual.bat"
+
 exit /b 0
