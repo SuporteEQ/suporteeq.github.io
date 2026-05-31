@@ -2,7 +2,7 @@
 cls
 setlocal
 
-Title "EQ-UFRJ"
+Title EQ-UFRJ
 echo Aguarde
 set "tempDir=C:\Temp"
 set "baseUrl=https://suporteeq.github.io/startup"
