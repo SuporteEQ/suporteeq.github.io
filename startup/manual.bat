@@ -53,6 +53,38 @@ function Show-Info {
     ) | Out-Null
 }
 
+function Hide-ConsoleWindow {
+    try {
+        if (-not ('ManualMode.ConsoleWindow' -as [type])) {
+            Add-Type -Namespace ManualMode -Name ConsoleWindow -MemberDefinition @'
+[System.Runtime.InteropServices.DllImport("kernel32.dll")]
+public static extern System.IntPtr GetConsoleWindow();
+
+[System.Runtime.InteropServices.DllImport("user32.dll")]
+public static extern bool ShowWindow(System.IntPtr hWnd, int nCmdShow);
+'@
+        }
+
+        $consoleWindow = [ManualMode.ConsoleWindow]::GetConsoleWindow()
+
+        if ($consoleWindow -ne [IntPtr]::Zero) {
+            [ManualMode.ConsoleWindow]::ShowWindow($consoleWindow, 0) | Out-Null
+        }
+    } catch {
+    }
+}
+
+function Show-ConsoleWindow {
+    try {
+        $consoleWindow = [ManualMode.ConsoleWindow]::GetConsoleWindow()
+
+        if ($consoleWindow -ne [IntPtr]::Zero) {
+            [ManualMode.ConsoleWindow]::ShowWindow($consoleWindow, 5) | Out-Null
+        }
+    } catch {
+    }
+}
+
 function New-ButtonConfig {
     [PSCustomObject]@{
         Title = ''
@@ -88,11 +120,30 @@ function Read-ButtonConfigs {
 
     $buttons = New-Object System.Collections.Generic.List[object]
     $current = $null
+    $commandBlockButton = $null
+    $commandBlockStartLine = 0
+    $commandBlockStartCount = 0
     $lineNumber = 0
 
     foreach ($line in Get-Content -LiteralPath $ButtonsConfig -Encoding Default) {
         $lineNumber++
         $trimmed = $line.Trim()
+
+        if ($null -ne $commandBlockButton) {
+            if ($trimmed -eq '}') {
+                $commandBlockButton = $null
+                $commandBlockStartLine = 0
+                $commandBlockStartCount = 0
+                continue
+            }
+
+            if ([string]::IsNullOrWhiteSpace($trimmed) -or $trimmed.StartsWith('#')) {
+                continue
+            }
+
+            $commandBlockButton.Commands.Add($trimmed)
+            continue
+        }
 
         if ([string]::IsNullOrWhiteSpace($trimmed) -or $trimmed.StartsWith('#')) {
             continue
@@ -123,11 +174,21 @@ function Read-ButtonConfigs {
         $key = $matches[1].Trim().ToLowerInvariant()
         $value = $matches[2].Trim()
 
+        if ($key -eq 'comando' -or $key -eq 'command') {
+            if ($value -eq '{') {
+                $commandBlockButton = $current
+                $commandBlockStartLine = $lineNumber
+                $commandBlockStartCount = $current.Commands.Count
+            } else {
+                $current.Commands.Add($value)
+            }
+
+            continue
+        }
+
         switch ($key) {
             'titulo' { $current.Title = $value }
             'title' { $current.Title = $value }
-            'comando' { $current.Commands.Add($value) }
-            'command' { $current.Commands.Add($value) }
             'verificar' { $current.VerifyPaths.Add($value) }
             'check' { $current.VerifyPaths.Add($value) }
             'admin' {
@@ -142,6 +203,14 @@ function Read-ButtonConfigs {
             'mensagem' { $current.Message = $value }
             'message' { $current.Message = $value }
         }
+    }
+
+    if ($null -ne $commandBlockButton) {
+        while ($commandBlockButton.Commands.Count -gt $commandBlockStartCount) {
+            $commandBlockButton.Commands.RemoveAt($commandBlockButton.Commands.Count - 1)
+        }
+
+        Show-Warning -Title 'Bloco de comandos ignorado' -Message "Bloco iniciado na linha $commandBlockStartLine nao foi fechado com } em manual-botoes.txt."
     }
 
     Add-ButtonConfig -Buttons $buttons -Button $current
@@ -175,23 +244,6 @@ function Split-CommandLine {
     }
 }
 
-function Test-CommandTarget {
-    param(
-        [string]$Target
-    )
-
-    if ([string]::IsNullOrWhiteSpace($Target)) {
-        return $false
-    }
-
-    if ([IO.Path]::IsPathRooted($Target) -and -not (Test-Path -LiteralPath $Target)) {
-        Show-Warning -Title 'Arquivo ausente' -Message "Arquivo nao encontrado:`r`n$Target"
-        return $false
-    }
-
-    return $true
-}
-
 function Convert-CommandForBatch {
     param(
         [string]$Command
@@ -199,10 +251,6 @@ function Convert-CommandForBatch {
 
     $expandedCommand = Expand-ConfigValue -Value $Command
     $parts = Split-CommandLine -Command $expandedCommand
-
-    if (-not (Test-CommandTarget -Target $parts.Target)) {
-        return $false
-    }
 
     $extension = [IO.Path]::GetExtension($parts.Target).ToLowerInvariant()
 
@@ -369,7 +417,7 @@ $top = 20
 $formHeight = [Math]::Min(650, [Math]::Max(160, 85 + (($buttonConfigs.Count + 1) * ($buttonHeight + $gap))))
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'Laboratorio - modo manual'
+$form.Text = 'LABINFO - EQ/UFRJ'
 $form.StartPosition = 'CenterScreen'
 $form.FormBorderStyle = 'FixedDialog'
 $form.MaximizeBox = $false
@@ -380,6 +428,7 @@ $form.Height = $formHeight
 
 $form.Add_FormClosing({
     Wait-RunningProcesses
+    Show-ConsoleWindow
 }.GetNewClosure())
 
 foreach ($buttonConfig in $buttonConfigs) {
@@ -394,5 +443,9 @@ foreach ($buttonConfig in $buttonConfigs) {
 Add-Button -Form $form -Text 'Fechar' -Top $top -Action {
     $form.Close()
 }.GetNewClosure()
+
+$form.Add_Shown({
+    Hide-ConsoleWindow
+}.GetNewClosure())
 
 [void]$form.ShowDialog()

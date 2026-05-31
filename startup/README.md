@@ -101,6 +101,10 @@ Comportamento:
 
 Cada bloco `[botao]` em `manual-botoes.txt` cria um botao na GUI.
 
+Ao abrir a GUI, o `manual.bat` oculta a janela de terminal usada para iniciar o
+modo manual. Essa janela nao e encerrada; ela apenas fica invisivel enquanto a
+GUI permanece em uso e volta a aparecer quando a GUI e fechada.
+
 Linhas vazias e linhas que comecam com `#` sao ignoradas. Comentarios no fim da
 linha nao sao removidos.
 
@@ -109,7 +113,7 @@ Campos aceitos:
 | Campo | Obrigatorio | Descricao |
 | --- | --- | --- |
 | `titulo=` | Sim | Texto exibido no botao. |
-| `comando=` | Sim | Comando executado ao clicar. Pode repetir no mesmo botao. |
+| `comando=` | Sim | Comando executado ao clicar. Pode repetir no mesmo botao ou abrir um bloco com `comando={`. |
 | `verificar=` | Nao | Caminho que deve existir antes de executar o botao. Pode repetir. |
 | `admin=` | Nao | `true` para executar elevado via UAC; `false` por padrao. |
 | `mensagem=` | Nao | Mensagem exibida apos iniciar os comandos. Em `admin=true`, aparece depois que a janela elevada termina. |
@@ -127,8 +131,15 @@ Variaveis disponiveis:
 
 ## Execucao De Comandos
 
-Todos os `comando=` de um mesmo botao rodam em sequencia no mesmo arquivo
-temporario `.cmd`, mantendo contexto entre comandos.
+Todos os comandos de um mesmo botao rodam em sequencia no mesmo arquivo
+temporario `.cmd`, mantendo contexto entre comandos. Voce pode declarar varios
+comandos repetindo `comando=` ou usando um bloco iniciado por `comando={` e
+fechado por uma linha com `}`.
+
+O campo `verificar=` e avaliado antes de qualquer comando do botao. Nao use
+`verificar=` para um arquivo que sera baixado ou criado pelo proprio bloco de
+comandos; nesse caso, deixe o erro aparecer no comando seguinte ou trate dentro
+do proprio bloco.
 
 Exemplo:
 
@@ -136,8 +147,10 @@ Exemplo:
 [botao]
 titulo=Mostrar mensagem
 admin=false
-comando=echo Aperte uma tecla
-comando=pause
+comando={
+echo Aperte uma tecla
+pause
+}
 ```
 
 Arquivos `.bat` e `.cmd` recebem `call` automaticamente para o fluxo continuar.

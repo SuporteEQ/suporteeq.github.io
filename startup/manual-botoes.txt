@@ -5,12 +5,13 @@
 #
 # Campos principais:
 # titulo=Texto do botao
-# comando=Comando a executar. Pode repetir para executar mais de um comando.
-# Varios comando= no mesmo botao rodam no mesmo terminal, em sequencia.
+# comando=Comando a executar. Pode repetir ou usar comando={ ... }.
+# Varios comandos no mesmo botao rodam no mesmo terminal, em sequencia.
 # Arquivos .bat/.cmd recebem call automaticamente; .ps1 roda via powershell.exe.
 #
 # Campos opcionais:
 # verificar=Caminho que deve existir antes de executar o botao.
+# Nao use verificar= para arquivo que sera baixado/criado pelo proprio comando.
 # admin=true para executar o botao como administrador com UAC.
 # admin=false para executar sem elevacao. Este e o padrao.
 # mensagem=Texto exibido apos iniciar os comandos.
@@ -32,6 +33,16 @@
 # comando=C:\temp\test.ps1 -Nome "Aluno 1" -Force
 # comando=pause
 # mensagem=Todos os comandos do exemplo terminaram.
+#
+# Exemplo usando bloco de comandos:
+# [botao]
+# titulo=Exemplo com bloco
+# admin=false
+# comando={
+# echo Primeiro comando
+# echo Segundo comando
+# pause
+# }
 
 [botao]
 titulo=Registrar data/hora
@@ -58,47 +69,46 @@ admin=false
 comando=subl.exe
 
 [botao]
-titulo=(local) test.bat
+titulo=Executar test.bat
 admin=false
 comando=C:\temp\test.bat
 verificar=C:\temp\test.bat
 
 [botao]
-titulo=(local) test.ps1
+titulo=test.ps1
 admin=false
 comando=C:\temp\test.ps1
 verificar=C:\temp\test.ps1
 
 [botao]
-titulo=(local/admin) test.ps1
+titulo=(admin) test.ps1
 admin=true
 comando=C:\temp\test.ps1
 verificar=C:\temp\test.ps1
-
-
-
-
-
-
 
 
 [botao]
 titulo=(web) test.bat
 admin=false
-comando=curl --fail --location --silent --output C:\temp\test.bat https://suporteeq.github.io/tests/test.bat
-comando=C:\temp\test.bat
-verificar=C:\temp\test.bat
+comando={
+curl --fail --location --silent --output C:\temp\test.bat https://suporteeq.github.io/tests/test.bat
+C:\temp\test.bat
+}
+
 
 [botao]
 titulo=(web) test.ps1
 admin=false
-comando=curl --fail --location --silent --output C:\temp\test.ps1 https://suporteeq.github.io/tests/test.ps1
-comando=C:\temp\test.ps1
-verificar=C:\temp\test.ps1
+comando={
+curl --fail --location --silent --output C:\temp\test.ps1 https://suporteeq.github.io/tests/test.ps1
+C:\temp\test.ps1
+}
+
 
 [botao]
 titulo=(web/admin) test.ps1
 admin=true
-comando=curl --fail --location --silent --output C:\temp\test.ps1 https://suporteeq.github.io/tests/test.ps1
-comando=C:\temp\test.ps1
-verificar=C:\temp\test.ps1
+comando={
+curl --fail --location --silent --output C:\temp\test.ps1 https://suporteeq.github.io/tests/test.ps1
+C:\temp\test.ps1
+}
