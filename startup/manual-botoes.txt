@@ -58,19 +58,47 @@ admin=false
 comando=subl.exe
 
 [botao]
-titulo=Executar test.bat
+titulo=(local) test.bat
 admin=false
 comando=C:\temp\test.bat
 verificar=C:\temp\test.bat
 
 [botao]
-titulo=test.ps1
+titulo=(local) test.ps1
 admin=false
 comando=C:\temp\test.ps1
 verificar=C:\temp\test.ps1
 
 [botao]
-titulo=(admin) test.ps1
+titulo=(local/admin) test.ps1
 admin=true
+comando=C:\temp\test.ps1
+verificar=C:\temp\test.ps1
+
+
+
+
+
+
+
+
+[botao]
+titulo=(web) test.bat
+admin=false
+comando=curl --fail --location --silent --output C:\temp\test.bat https://suporteeq.github.io/tests/test.bat
+comando=C:\temp\test.bat
+verificar=C:\temp\test.bat
+
+[botao]
+titulo=(web) test.ps1
+admin=false
+comando=curl --fail --location --silent --output C:\temp\test.ps1 https://suporteeq.github.io/tests/test.ps1
+comando=C:\temp\test.ps1
+verificar=C:\temp\test.ps1
+
+[botao]
+titulo=(web/admin) test.ps1
+admin=true
+comando=curl --fail --location --silent --output C:\temp\test.ps1 https://suporteeq.github.io/tests/test.ps1
 comando=C:\temp\test.ps1
 verificar=C:\temp\test.ps1
