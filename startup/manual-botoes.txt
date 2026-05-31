@@ -1,0 +1,76 @@
+# Configure os botoes do modo manual neste arquivo.
+# Cada bloco [botao] cria um botao na janela.
+# Linhas vazias e linhas que comecam com # sao ignoradas.
+# Comentarios no fim da linha nao sao removidos.
+#
+# Campos principais:
+# titulo=Texto do botao
+# comando=Comando a executar. Pode repetir para executar mais de um comando.
+# Varios comando= no mesmo botao rodam no mesmo terminal, em sequencia.
+# Arquivos .bat/.cmd recebem call automaticamente; .ps1 roda via powershell.exe.
+#
+# Campos opcionais:
+# verificar=Caminho que deve existir antes de executar o botao.
+# admin=true para executar o botao como administrador com UAC.
+# admin=false para executar sem elevacao. Este e o padrao.
+# mensagem=Texto exibido apos iniciar os comandos.
+# Em admin=true, a mensagem aparece apenas depois que a janela elevada terminar.
+#
+# Variaveis disponiveis:
+# %SCRIPT_DIR% = pasta onde estao estes arquivos
+# %AUTO_BAT% = caminho completo do auto.bat
+#
+# Exemplo completo comentado:
+# [botao]
+# titulo=Exemplo completo
+# admin=true
+# verificar=%AUTO_BAT%
+# verificar=C:\temp\test.bat
+# comando=echo Este comando roda no mesmo terminal do proximo comando.
+# comando="%AUTO_BAT%"
+# comando=C:\temp\test.bat argumento1 argumento2
+# comando=C:\temp\test.ps1 -Nome "Aluno 1" -Force
+# comando=pause
+# mensagem=Todos os comandos do exemplo terminaram.
+
+[botao]
+titulo=Registrar data/hora
+admin=false
+comando="%AUTO_BAT%"
+verificar=%AUTO_BAT%
+mensagem=Data/hora registrada em C:\temp\auto.txt.
+
+
+[botao]
+titulo=mostrar auto.txt
+admin=false
+comando=type C:\Temp\auto.txt
+comando=pause
+
+[botao]
+titulo=Abrir notepad
+admin=false
+comando=notepad.exe
+
+[botao]
+titulo=Abrir Sublime
+admin=false
+comando=subl.exe
+
+[botao]
+titulo=Executar test.bat
+admin=false
+comando=C:\temp\test.bat
+verificar=C:\temp\test.bat
+
+[botao]
+titulo=test.ps1
+admin=false
+comando=C:\temp\test.ps1
+verificar=C:\temp\test.ps1
+
+[botao]
+titulo=(admin) test.ps1
+admin=true
+comando=C:\temp\test.ps1
+verificar=C:\temp\test.ps1
