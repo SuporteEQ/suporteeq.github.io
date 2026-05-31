@@ -19,7 +19,7 @@ function Wait-ForManualMode {
     $canReadConsole = $true
 
     Write-Host ''
-    Write-Host 'Modo automatico sera executado se nenhuma acao for tomada.'
+    #Write-Host 'Modo automatico sera executado se nenhuma acao for tomada.'
     Write-Host "Pressione $TriggerKey para abrir o modo manual."
     Write-Host ''
 

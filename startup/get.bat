@@ -2,6 +2,8 @@
 cls
 setlocal
 
+Title "EQ-UFRJ"
+echo Aguarde
 set "tempDir=C:\Temp"
 set "baseUrl=https://suporteeq.github.io/startup"
 set "workDir=%tempDir%\startup-%RANDOM%"
@@ -46,8 +48,8 @@ pause
 exit /b 1
 
 :DownloadFile
-echo Baixando %~1...
-curl --fail --location --show-error --output "%~1" "%~2"
+rem echo Baixando %~1...
+curl --fail --location --silent --output "%~1" "%~2"
 if errorlevel 1 (
     echo Falha ao baixar: %~2
     exit /b 1
