@@ -9,6 +9,11 @@ exit /b %ERRORLEVEL%
 $ScriptRoot = Split-Path -Parent $env:SCRIPT_FILE
 $ButtonsConfig = Join-Path $ScriptRoot 'manual-botoes.txt'
 $AutoScript = Join-Path $ScriptRoot 'auto.bat'
+$WorkDir = 'C:\temp'
+$LogDir = Join-Path $WorkDir 'logs'
+$CmdDir = Join-Path $WorkDir 'cmd'
+$AdminUserFile = 'C:\temp\user_a.txt'
+$AdminPasswordFile = 'C:\temp\user_b.txt'
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
@@ -16,9 +21,7 @@ Add-Type -AssemblyName System.Drawing
 $RunningProcesses = New-Object System.Collections.Generic.List[object]
 
 function Expand-ConfigValue {
-    param(
-        [string]$Value
-    )
+    param([string]$Value)
 
     $expanded = $Value.Replace('%SCRIPT_DIR%', $ScriptRoot)
     $expanded = $expanded.Replace('%AUTO_BAT%', $AutoScript)
@@ -26,10 +29,7 @@ function Expand-ConfigValue {
 }
 
 function Show-Warning {
-    param(
-        [string]$Title,
-        [string]$Message
-    )
+    param([string]$Title, [string]$Message)
 
     [System.Windows.Forms.MessageBox]::Show(
         $Message,
@@ -40,10 +40,7 @@ function Show-Warning {
 }
 
 function Show-Info {
-    param(
-        [string]$Title,
-        [string]$Message
-    )
+    param([string]$Title, [string]$Message)
 
     [System.Windows.Forms.MessageBox]::Show(
         $Message,
@@ -85,21 +82,27 @@ function Show-ConsoleWindow {
     }
 }
 
+function Ensure-WorkDirs {
+    foreach ($directory in @($WorkDir, $LogDir, $CmdDir)) {
+        if (-not (Test-Path -LiteralPath $directory)) {
+            New-Item -ItemType Directory -Path $directory -Force -ErrorAction Stop | Out-Null
+        }
+    }
+}
+
 function New-ButtonConfig {
     [PSCustomObject]@{
         Title = ''
         Commands = New-Object System.Collections.Generic.List[string]
         VerifyPaths = New-Object System.Collections.Generic.List[string]
         Admin = $false
+        Elevate = $false
         Message = ''
     }
 }
 
 function Add-ButtonConfig {
-    param(
-        [System.Collections.Generic.List[object]]$Buttons,
-        [object]$Button
-    )
+    param([System.Collections.Generic.List[object]]$Buttons, [object]$Button)
 
     if ($null -eq $Button) {
         return
@@ -200,6 +203,15 @@ function Read-ButtonConfigs {
                     Show-Warning -Title 'Valor de admin ignorado' -Message "Linha $lineNumber tem admin invalido:`r`n$value`r`n`r`nUse true ou false."
                 }
             }
+            'elevate' {
+                if ($value -match '^(sim|s|true|1|yes|y)$') {
+                    $current.Elevate = $true
+                } elseif ($value -match '^(nao|n|false|0|no)$') {
+                    $current.Elevate = $false
+                } else {
+                    Show-Warning -Title 'Valor de elevate ignorado' -Message "Linha $lineNumber tem elevate invalido:`r`n$value`r`n`r`nUse true ou false."
+                }
+            }
             'mensagem' { $current.Message = $value }
             'message' { $current.Message = $value }
         }
@@ -218,45 +230,31 @@ function Read-ButtonConfigs {
 }
 
 function Split-CommandLine {
-    param(
-        [string]$Command
-    )
+    param([string]$Command)
 
     $trimmed = $Command.Trim()
 
     if ($trimmed -match '^"([^"]+)"\s*(.*)$') {
-        return [PSCustomObject]@{
-            Target = $matches[1]
-            Arguments = $matches[2].Trim()
-        }
+        return [PSCustomObject]@{ Target = $matches[1]; Arguments = $matches[2].Trim() }
     }
 
     if ($trimmed -match '^(\S+)\s*(.*)$') {
-        return [PSCustomObject]@{
-            Target = $matches[1]
-            Arguments = $matches[2].Trim()
-        }
+        return [PSCustomObject]@{ Target = $matches[1]; Arguments = $matches[2].Trim() }
     }
 
-    return [PSCustomObject]@{
-        Target = ''
-        Arguments = ''
-    }
+    [PSCustomObject]@{ Target = ''; Arguments = '' }
 }
 
 function Convert-CommandForBatch {
-    param(
-        [string]$Command
-    )
+    param([string]$Command)
 
     $expandedCommand = Expand-ConfigValue -Value $Command
     $parts = Split-CommandLine -Command $expandedCommand
-
     $extension = [IO.Path]::GetExtension($parts.Target).ToLowerInvariant()
 
     if ($extension -eq '.ps1') {
         $line = ('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "{0}"' -f $parts.Target)
-        
+
         if (-not [string]::IsNullOrWhiteSpace($parts.Arguments)) {
             $line = "$line $($parts.Arguments)"
         }
@@ -277,12 +275,247 @@ function Convert-CommandForBatch {
     return $expandedCommand
 }
 
-function Start-ConfiguredCommands {
-    param(
-        [System.Collections.Generic.List[string]]$Commands,
-        [bool]$Admin
+function Test-CredentialFiles {
+    if (-not (Test-Path -LiteralPath $AdminUserFile)) {
+        throw "Arquivo de usuario administrador nao encontrado: $AdminUserFile"
+    }
+
+    if (-not (Test-Path -LiteralPath $AdminPasswordFile)) {
+        throw "Arquivo de senha administrador nao encontrado: $AdminPasswordFile"
+    }
+}
+
+function Normalize-AdminUserName {
+    param([string]$UserName)
+
+    $trimmed = $UserName.Trim()
+
+    if ($trimmed -match '^[^\\]+\\[^\\]+$' -or $trimmed -match '^\.\\[^\\]+$' -or $trimmed -match '^[^@]+@[^@]+$') {
+        return $trimmed
+    }
+
+    return ("{0}\{1}" -f $env:COMPUTERNAME, $trimmed)
+}
+
+function Get-AdminCredentialConfig {
+    Test-CredentialFiles
+
+    try {
+        $userName = ([IO.File]::ReadAllText($AdminUserFile)).Trim()
+        $password = ([IO.File]::ReadAllText($AdminPasswordFile)).TrimEnd([char[]]"`r`n")
+    } catch {
+        throw "Nao foi possivel ler os arquivos de credenciais administrativas. $($_.Exception.Message)"
+    }
+
+    if ([string]::IsNullOrWhiteSpace($userName)) {
+        throw "Arquivo de usuario administrador esta vazio: $AdminUserFile"
+    }
+
+    if ([string]::IsNullOrEmpty($password)) {
+        throw "Arquivo de senha administrador esta vazio: $AdminPasswordFile"
+    }
+
+    [PSCustomObject]@{ UserName = (Normalize-AdminUserName -UserName $userName); Password = $password }
+}
+
+function ConvertTo-CommandLineArgument {
+    param([string]$Argument)
+
+    if ($null -eq $Argument) {
+        return '""'
+    }
+
+    if ($Argument -notmatch '[\s"]') {
+        return $Argument
+    }
+
+    $builder = New-Object System.Text.StringBuilder
+    [void]$builder.Append('"')
+    $backslashes = 0
+
+    foreach ($character in $Argument.ToCharArray()) {
+        if ($character -eq '\') {
+            $backslashes++
+            continue
+        }
+
+        if ($character -eq '"') {
+            [void]$builder.Append(('\' * (($backslashes * 2) + 1)))
+            [void]$builder.Append('"')
+            $backslashes = 0
+            continue
+        }
+
+        if ($backslashes -gt 0) {
+            [void]$builder.Append(('\' * $backslashes))
+            $backslashes = 0
+        }
+
+        [void]$builder.Append($character)
+    }
+
+    if ($backslashes -gt 0) {
+        [void]$builder.Append(('\' * ($backslashes * 2)))
+    }
+
+    [void]$builder.Append('"')
+    return $builder.ToString()
+}
+
+function ConvertTo-CommandLine {
+    param([string[]]$Arguments)
+
+    ($Arguments | ForEach-Object { ConvertTo-CommandLineArgument -Argument $_ }) -join ' '
+}
+
+function Invoke-NativeCommand {
+    param([string]$FilePath, [string[]]$Arguments, [int]$TimeoutSeconds = 0)
+
+    Ensure-WorkDirs
+
+    $id = [guid]::NewGuid().ToString('N')
+    $stdoutPath = Join-Path $LogDir ("native-{0}.out" -f $id)
+    $stderrPath = Join-Path $LogDir ("native-{0}.err" -f $id)
+
+    try {
+        Remove-Item -LiteralPath $stdoutPath, $stderrPath -Force -ErrorAction SilentlyContinue
+        $argumentLine = ConvertTo-CommandLine -Arguments $Arguments
+        $process = Start-Process -FilePath $FilePath -ArgumentList $argumentLine -PassThru -NoNewWindow -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -ErrorAction Stop
+
+        if ($TimeoutSeconds -gt 0) {
+            if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+                try {
+                    $process.Kill()
+                } catch {
+                }
+
+                return [PSCustomObject]@{
+                    ExitCode = 1
+                    Output = "Tempo limite aguardando $FilePath."
+                }
+            }
+        } else {
+            $process.WaitForExit()
+        }
+
+        $output = New-Object System.Collections.Generic.List[string]
+
+        foreach ($path in @($stdoutPath, $stderrPath)) {
+            if (Test-Path -LiteralPath $path) {
+                $text = [IO.File]::ReadAllText($path)
+
+                if (-not [string]::IsNullOrWhiteSpace($text)) {
+                    $output.Add($text.TrimEnd())
+                }
+            }
+        }
+
+        [PSCustomObject]@{
+            ExitCode = $process.ExitCode
+            Output = ($output.ToArray() -join "`r`n")
+        }
+    } catch {
+        [PSCustomObject]@{
+            ExitCode = 1
+            Output = $_.Exception.Message
+        }
+    } finally {
+        Remove-Item -LiteralPath $stdoutPath, $stderrPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Write-FailureLog {
+    param([string]$Prefix, [int]$ExitCode, [string]$Output)
+
+    Ensure-WorkDirs
+    $logPath = Join-Path $LogDir ("{0}-{1}.log" -f $Prefix, ([guid]::NewGuid().ToString('N')))
+    $lines = @(
+        ("Data: {0}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')),
+        ("Codigo: {0}" -f $ExitCode),
+        '',
+        $Output
     )
 
+    Set-Content -LiteralPath $logPath -Value $lines -Encoding Default -ErrorAction Stop
+    return $logPath
+}
+
+function Resolve-PsExecPath {
+    Ensure-WorkDirs
+    Write-Host 'Aguarde...'
+
+    $candidates = @(
+        (Join-Path $ScriptRoot 'PsExec64.exe'),
+        (Join-Path $ScriptRoot 'PsExec.exe'),
+        'C:\temp\pstools\PsExec64.exe',
+        'C:\temp\pstools\PsExec.exe'
+    )
+
+    foreach ($candidate in $candidates) {
+        if ((Test-Path -LiteralPath $candidate) -and ((Get-Item -LiteralPath $candidate).Length -gt 0)) {
+            return $candidate
+        }
+    }
+
+    foreach ($name in @('PsExec64.exe', 'PsExec.exe')) {
+        $command = Get-Command $name -ErrorAction SilentlyContinue
+
+        if ($null -ne $command -and (Test-Path -LiteralPath $command.Source)) {
+            return $command.Source
+        }
+    }
+
+    $toolsDir = 'C:\temp\pstools'
+
+    if (-not (Test-Path -LiteralPath $toolsDir)) {
+        New-Item -ItemType Directory -Path $toolsDir -Force -ErrorAction Stop | Out-Null
+    }
+
+    foreach ($name in @('PsExec64.exe', 'PsExec.exe')) {
+        $target = Join-Path $toolsDir $name
+        $url = "https://suporteeq.github.io/pstools/$name"
+
+        try {
+            Invoke-WebRequest -Uri $url -OutFile $target -UseBasicParsing -ErrorAction Stop | Out-Null
+
+            if ((Test-Path -LiteralPath $target) -and ((Get-Item -LiteralPath $target).Length -gt 0)) {
+                return $target
+            }
+        } catch {
+            Remove-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    throw 'Nao foi possivel preparar a ferramenta de execucao administrativa.'
+}
+
+function Remove-TemporaryCmdFile {
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return
+    }
+
+    try {
+        $resolved = Resolve-Path -LiteralPath $Path -ErrorAction SilentlyContinue
+
+        if ($null -eq $resolved) {
+            return
+        }
+
+        foreach ($item in $resolved) {
+            if ($item.Path.StartsWith($CmdDir, [StringComparison]::OrdinalIgnoreCase) -and $item.Path.EndsWith('.cmd', [StringComparison]::OrdinalIgnoreCase)) {
+                Remove-Item -LiteralPath $item.Path -Force -ErrorAction SilentlyContinue
+            }
+        }
+    } catch {
+    }
+}
+
+function New-CommandScript {
+    param([System.Collections.Generic.List[string]]$Commands, [string]$Prefix)
+
+    Ensure-WorkDirs
     $lines = New-Object System.Collections.Generic.List[string]
     $lines.Add('@echo off')
     $lines.Add('setlocal')
@@ -297,35 +530,118 @@ function Start-ConfiguredCommands {
         $lines.Add($line)
     }
 
-    $tempScript = Join-Path $env:TEMP ("manual-botao-{0}.cmd" -f ([guid]::NewGuid().ToString('N')))
+    $lines.Add('set "EXIT_CODE=%ERRORLEVEL%"')
+    $lines.Add('if "%EXIT_CODE%"=="0" (del /f /q "%~f0" >nul 2>&1 & exit /b 0)')
+    $lines.Add('exit /b %EXIT_CODE%')
+
+    $path = Join-Path $CmdDir ("{0}-{1}.cmd" -f $Prefix, ([guid]::NewGuid().ToString('N')))
+    Set-Content -LiteralPath $path -Value $lines.ToArray() -Encoding Default -ErrorAction Stop
+    return $path
+}
+
+function Invoke-PsExecLocalCommand {
+    param([string]$CommandScript)
+
+    $credential = Get-AdminCredentialConfig
+    $psexecPath = Resolve-PsExecPath
+
+    $arguments = New-Object System.Collections.Generic.List[string]
+    $arguments.Add('-accepteula')
+    $arguments.Add('-nobanner')
+    $arguments.Add('-i')
+    $arguments.Add('-u')
+    $arguments.Add($credential.UserName)
+    $arguments.Add('-p')
+    $arguments.Add($credential.Password)
+    $arguments.Add('cmd.exe')
+    $arguments.Add('/c')
+    $arguments.Add($CommandScript)
+
+    Invoke-NativeCommand -FilePath $psexecPath -Arguments $arguments.ToArray()
+}
+
+function Start-AdminPsExecCommand {
+    param([string]$CommandScript)
 
     try {
-        Set-Content -LiteralPath $tempScript -Value $lines.ToArray() -Encoding Default -ErrorAction Stop
+        $result = Invoke-PsExecLocalCommand -CommandScript $CommandScript
     } catch {
-        Show-Warning -Title 'Erro ao preparar comandos' -Message "Nao foi possivel criar o arquivo temporario:`r`n$tempScript`r`n`r`n$($_.Exception.Message)"
+        $logPath = Write-FailureLog -Prefix 'manual-admin' -ExitCode 1 -Output $_.Exception.Message
+        Show-Warning -Title 'Erro na execucao administrativa' -Message "Nao foi possivel iniciar a execucao via PsExec.`r`n`r`nLog:`r`n$logPath"
         return $false
     }
 
-    $arguments = @('/c', ('"{0}"' -f $tempScript))
+    if ($result.ExitCode -eq 0) {
+        Remove-TemporaryCmdFile -Path $CommandScript
+        return $true
+    }
+
+    $logPath = Write-FailureLog -Prefix 'manual-admin' -ExitCode $result.ExitCode -Output $result.Output
+    Show-Warning -Title 'Erro na execucao administrativa' -Message "A execucao via PsExec terminou com codigo $($result.ExitCode).`r`n`r`nLog:`r`n$logPath"
+    return $false
+}
+
+function Start-ElevatedUacCommand {
+    param([string]$CommandScript)
 
     try {
-        if ($Admin) {
-            Start-Process -FilePath 'cmd.exe' -ArgumentList $arguments -Verb RunAs -Wait -ErrorAction Stop
-        } else {
-            $process = Start-Process -FilePath 'cmd.exe' -ArgumentList $arguments -PassThru -ErrorAction Stop
-            $script:RunningProcesses.Add($process)
-        }
+        $process = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', ('"{0}"' -f $CommandScript)) -Verb RunAs -Wait -PassThru -ErrorAction Stop
     } catch {
-        if ($Admin) {
-            Show-Warning -Title 'Elevacao cancelada ou falhou' -Message "Nao foi possivel executar este botao como administrador.`r`n`r`n$($_.Exception.Message)"
-        } else {
-            Show-Warning -Title 'Erro ao executar comandos' -Message "Nao foi possivel iniciar os comandos deste botao.`r`n`r`n$($_.Exception.Message)"
-        }
-
+        $logPath = Write-FailureLog -Prefix 'manual-elevate' -ExitCode 1 -Output $_.Exception.Message
+        Show-Warning -Title 'Elevacao cancelada ou falhou' -Message "Nao foi possivel iniciar os comandos elevados via UAC.`r`n`r`nLog:`r`n$logPath"
         return $false
     }
 
-    return $true
+    if ($null -ne $process -and $process.ExitCode -eq 0) {
+        Remove-TemporaryCmdFile -Path $CommandScript
+        return $true
+    }
+
+    $exitCode = 1
+
+    if ($null -ne $process) {
+        $exitCode = $process.ExitCode
+    }
+
+    $logPath = Write-FailureLog -Prefix 'manual-elevate' -ExitCode $exitCode -Output "A execucao elevada via UAC terminou com codigo $exitCode."
+    Show-Warning -Title 'Erro na execucao elevada' -Message "A execucao elevada via UAC terminou com codigo $exitCode.`r`n`r`nLog:`r`n$logPath"
+    return $false
+}
+
+function Start-ConfiguredCommands {
+    param([System.Collections.Generic.List[string]]$Commands, [bool]$Admin, [bool]$Elevate)
+
+    try {
+        $tempScript = New-CommandScript -Commands $Commands -Prefix 'manual-botao'
+
+        if ($false -eq $tempScript) {
+            return $false
+        }
+    } catch {
+        Show-Warning -Title 'Erro ao preparar comandos' -Message "Nao foi possivel criar o arquivo temporario.`r`n`r`n$($_.Exception.Message)"
+        return $false
+    }
+
+    try {
+        if ($Elevate) {
+            return Start-ElevatedUacCommand -CommandScript $tempScript
+        }
+
+        if ($Admin) {
+            return Start-AdminPsExecCommand -CommandScript $tempScript
+        }
+
+        $process = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/c', ('"{0}"' -f $tempScript)) -PassThru -ErrorAction Stop
+        $script:RunningProcesses.Add($process)
+        return $true
+    } catch {
+        if ($Admin -or $Elevate) {
+            Remove-TemporaryCmdFile -Path $tempScript
+        }
+
+        Show-Warning -Title 'Erro ao executar comandos' -Message "Nao foi possivel iniciar os comandos deste botao.`r`n`r`n$($_.Exception.Message)"
+        return $false
+    }
 }
 
 function Remove-FinishedProcesses {
@@ -360,9 +676,7 @@ function Wait-RunningProcesses {
 }
 
 function Invoke-ButtonConfig {
-    param(
-        [object]$Button
-    )
+    param([object]$Button)
 
     foreach ($path in $Button.VerifyPaths) {
         $expandedPath = Expand-ConfigValue -Value $path
@@ -373,7 +687,7 @@ function Invoke-ButtonConfig {
         }
     }
 
-    $ok = Start-ConfiguredCommands -Commands $Button.Commands -Admin $Button.Admin
+    $ok = Start-ConfiguredCommands -Commands $Button.Commands -Admin $Button.Admin -Elevate $Button.Elevate
 
     if (-not $ok) {
         return
@@ -385,12 +699,7 @@ function Invoke-ButtonConfig {
 }
 
 function Add-Button {
-    param(
-        [System.Windows.Forms.Form]$Form,
-        [string]$Text,
-        [int]$Top,
-        [scriptblock]$Action
-    )
+    param([System.Windows.Forms.Form]$Form, [string]$Text, [int]$Top, [scriptblock]$Action)
 
     $button = New-Object System.Windows.Forms.Button
     $button.Text = $Text

@@ -12,10 +12,18 @@
 # Campos opcionais:
 # verificar=Caminho que deve existir antes de executar o botao.
 # Nao use verificar= para arquivo que sera baixado/criado pelo proprio comando.
-# admin=true para executar o botao como administrador com UAC.
+# admin=true para executar como outro usuario via PsExec, sem elevacao garantida.
+# Usa C:\temp\user_a.txt e C:\temp\user_b.txt como credenciais do PsExec.
+# elevate=true para executar com UAC nativo, digitando/escolhendo a credencial no prompt.
+# Se admin=true e elevate=true estiverem juntos, elevate=true prevalece e usa UAC.
+# Se user_a.txt tiver apenas Administrador, usa %COMPUTERNAME%\Administrador.
+# Logs ficam em C:\temp\logs; .cmd temporarios ficam em C:\temp\cmd.
+# Em admin=true/elevate=true, o .cmd temporario e apagado em caso de sucesso.
+# Em admin=false, .cmd temporarios sao apagados apos sucesso e preservados em falhas.
 # admin=false para executar sem elevacao. Este e o padrao.
 # mensagem=Texto exibido apos iniciar os comandos.
-# Em admin=true, a mensagem aparece apenas depois que a janela elevada terminar.
+# Em admin=true/elevate=true, a mensagem aparece depois que a execucao terminar.
+# Comandos admin=true/elevate=true devem ser nao interativos; saida/erro ficam em log temporario.
 #
 # Variaveis disponiveis:
 # %SCRIPT_DIR% = pasta onde estao estes arquivos
@@ -25,14 +33,21 @@
 # [botao]
 # titulo=Exemplo completo
 # admin=true
+# elevate=true
 # verificar=%AUTO_BAT%
-# verificar=C:\temp\test.bat
+# verificar=C:\temp\tests\test.bat
 # comando=echo Este comando roda no mesmo terminal do proximo comando.
 # comando="%AUTO_BAT%"
-# comando=C:\temp\test.bat argumento1 argumento2
-# comando=C:\temp\test.ps1 -Nome "Aluno 1" -Force
+# comando=C:\temp\tests\test.bat argumento1 argumento2
+# comando=C:\temp\tests\test.ps1 -Nome "Aluno 1" -Force
 # comando=pause
 # mensagem=Todos os comandos do exemplo terminaram.
+#
+# Exemplo usando elevacao UAC:
+# [botao]
+# titulo=Teste elevado
+# elevate=true
+# comando=C:\temp\tests\test.ps1
 #
 # Exemplo usando bloco de comandos:
 # [botao]
@@ -69,30 +84,37 @@ admin=false
 comando=subl.exe
 
 [botao]
-titulo=Executar test.bat
+titulo=(local) test.bat
 admin=false
-comando=C:\temp\test.bat
-verificar=C:\temp\test.bat
+comando=C:\temp\tests\test.bat
+verificar=C:\temp\tests\test.bat
 
 [botao]
-titulo=test.ps1
+titulo=(local) test.ps1
 admin=false
-comando=C:\temp\test.ps1
-verificar=C:\temp\test.ps1
+comando=C:\temp\tests\test.ps1
+verificar=C:\temp\tests\test.ps1
 
 [botao]
-titulo=(admin) test.ps1
+titulo=(local/admin) test.ps1
 admin=true
-comando=C:\temp\test.ps1
-verificar=C:\temp\test.ps1
+comando=C:\temp\tests\test.ps1
+verificar=C:\temp\tests\test.ps1
+
+[botao]
+titulo=(local/admin/elevate) test.ps1
+admin=true
+elevate=true
+comando=C:\temp\tests\test.ps1
+verificar=C:\temp\tests\test.ps1
 
 
 [botao]
 titulo=(web) test.bat
 admin=false
 comando={
-curl --fail --location --silent --output C:\temp\test.bat https://suporteeq.github.io/tests/test.bat
-C:\temp\test.bat
+curl --fail --location --silent --output C:\temp\tests\test.bat https://suporteeq.github.io/tests/test.bat
+C:\temp\tests\test.bat
 }
 
 
@@ -100,8 +122,8 @@ C:\temp\test.bat
 titulo=(web) test.ps1
 admin=false
 comando={
-curl --fail --location --silent --output C:\temp\test.ps1 https://suporteeq.github.io/tests/test.ps1
-C:\temp\test.ps1
+curl --fail --location --silent --output C:\temp\tests\test.ps1 https://suporteeq.github.io/tests/test.ps1
+C:\temp\tests\test.ps1
 }
 
 
@@ -109,6 +131,6 @@ C:\temp\test.ps1
 titulo=(web/admin) test.ps1
 admin=true
 comando={
-curl --fail --location --silent --output C:\temp\test.ps1 https://suporteeq.github.io/tests/test.ps1
-C:\temp\test.ps1
+curl --fail --location --silent --output C:\temp\tests\test.ps1 https://suporteeq.github.io/tests/test.ps1
+C:\temp\tests\test.ps1
 }

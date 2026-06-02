@@ -105,6 +105,12 @@ Ao abrir a GUI, o `manual.bat` oculta a janela de terminal usada para iniciar o
 modo manual. Essa janela nao e encerrada; ela apenas fica invisivel enquanto a
 GUI permanece em uso e volta a aparecer quando a GUI e fechada.
 
+O modo manual tem dois caminhos especiais de execucao:
+
+- `admin=true`: executa como outro usuario via PsExec, sem elevacao garantida;
+- `elevate=true`: executa com UAC nativo, pedindo confirmacao ou senha no prompt
+  do Windows.
+
 Linhas vazias e linhas que comecam com `#` sao ignoradas. Comentarios no fim da
 linha nao sao removidos.
 
@@ -115,12 +121,28 @@ Campos aceitos:
 | `titulo=` | Sim | Texto exibido no botao. |
 | `comando=` | Sim | Comando executado ao clicar. Pode repetir no mesmo botao ou abrir um bloco com `comando={`. |
 | `verificar=` | Nao | Caminho que deve existir antes de executar o botao. Pode repetir. |
-| `admin=` | Nao | `true` para executar elevado via UAC; `false` por padrao. |
-| `mensagem=` | Nao | Mensagem exibida apos iniciar os comandos. Em `admin=true`, aparece depois que a janela elevada termina. |
+| `admin=` | Nao | `true` para executar como outro usuario via PsExec, sem elevacao garantida; `false` por padrao. |
+| `elevate=` | Nao | `true` para executar com UAC nativo. Se usado junto com `admin=true`, `elevate=true` prevalece. |
+| `mensagem=` | Nao | Mensagem exibida apos iniciar os comandos. Em `admin=true` ou `elevate=true`, aparece depois que a execucao termina. |
 
 Valores aceitos em `admin=true`: `true`, `sim`, `s`, `1`, `yes`, `y`.
 
 Valores aceitos em `admin=false`: `false`, `nao`, `n`, `0`, `no`.
+
+Os mesmos valores booleanos sao aceitos em `elevate=true` e `elevate=false`.
+
+Credenciais para `admin=true` via PsExec:
+
+| Arquivo | Conteudo |
+| --- | --- |
+| `C:\temp\user_a.txt` | Usuario administrador local ou de dominio. |
+| `C:\temp\user_b.txt` | Senha desse usuario. |
+
+Esses arquivos ficam em texto puro localmente. Restrinja as permissoes deles
+para evitar leitura por usuarios nao autorizados.
+
+`elevate=true` nao usa esses arquivos. A credencial deve ser digitada ou
+confirmada no prompt UAC do Windows.
 
 Variaveis disponiveis:
 
@@ -160,9 +182,49 @@ Arquivos `.ps1` rodam via:
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File
 ```
 
-Quando `admin=true`, o botao inteiro e executado em uma janela elevada com UAC e
-o `manual.bat` aguarda a janela elevada terminar. Se o UAC for cancelado ou
-falhar, a execucao daquele botao e cancelada.
+Quando `admin=true`, o botao inteiro e executado por PsExec usando as credenciais
+de `C:\temp\user_a.txt` e `C:\temp\user_b.txt`. Esse caminho troca o usuario da
+execucao, mas nao garante token elevado.
+
+O fluxo de `admin=true` usa:
+
+```txt
+PsExec -accepteula -nobanner -i -u <usuario> -p <senha> cmd.exe /c <cmd-temporario>
+```
+
+O script procura `PsExec64.exe` e `PsExec.exe` nesta ordem: pasta do script,
+`C:\temp\pstools` e `PATH`. Se nao encontrar, tenta baixar silenciosamente de
+`https://suporteeq.github.io/pstools/` para `C:\temp\pstools`.
+
+Quando `elevate=true`, o botao inteiro e executado por UAC nativo:
+
+```txt
+Start-Process cmd.exe -Verb RunAs -Wait
+```
+
+Esse caminho nao usa PsExec nem `user_a.txt`/`user_b.txt`. O Windows mostra o
+prompt UAC para confirmacao ou digitacao da credencial. Se `admin=true` e
+`elevate=true` estiverem juntos, `elevate=true` prevalece.
+
+Se `C:\temp\user_a.txt` tiver apenas o nome simples, como `Administrador`, o
+script usa automaticamente `%COMPUTERNAME%\Administrador`. Valores como
+`DOMINIO\usuario`, `.\usuario`, `COMPUTADOR\usuario` e `usuario@dominio` sao
+usados como informados.
+
+Os arquivos gerados ficam organizados em:
+
+- `C:\temp\logs`: logs curtos de erro administrativo ou elevacao;
+- `C:\temp\cmd`: arquivos `.cmd` temporarios de comando.
+
+Em `admin=true` ou `elevate=true`, o `.cmd` temporario e removido quando a
+execucao termina com sucesso. Em falha ou cancelamento do UAC, o log permanece
+em `C:\temp\logs` e o `.cmd` fica preservado em `C:\temp\cmd`. Em `admin=false`,
+o `.cmd` se autoapaga quando termina com sucesso e fica preservado se o comando
+retornar erro.
+
+Comandos `admin=true` e `elevate=true` devem ser nao interativos depois do
+inicio. Evite `pause`, prompts, programas que esperam clique ou instaladores sem
+modo silencioso.
 
 Quando `admin=false`, o comando e iniciado sem elevacao. O `manual.bat` registra
 os processos iniciados pelos botoes e, se o usuario fechar a GUI enquanto ainda
@@ -172,6 +234,8 @@ rastreada ainda esta em uso.
 
 ## Exemplo De Botao
 
+Execucao normal:
+
 ```txt
 [botao]
 titulo=Registrar data/hora
@@ -179,6 +243,24 @@ admin=false
 verificar=%AUTO_BAT%
 comando="%AUTO_BAT%"
 mensagem=Data/hora registrada em C:\temp\auto.txt.
+```
+
+Execucao como outro usuario via PsExec:
+
+```txt
+[botao]
+titulo=Executar como usuario admin
+admin=true
+comando=C:\temp\tests\test.ps1
+```
+
+Execucao elevada via UAC:
+
+```txt
+[botao]
+titulo=Executar elevado
+elevate=true
+comando=C:\temp\tests\test.ps1
 ```
 
 ## Comportamento Se Arquivos Faltarem

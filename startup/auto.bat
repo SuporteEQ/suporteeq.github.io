@@ -17,4 +17,6 @@ if not exist "%AUTO_FILE%" (
 
 REM call "%~dp0manual.bat"
 
+echo c:\temp\get.bat|clip  && cls
+
 exit /b 0
