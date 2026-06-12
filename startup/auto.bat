@@ -22,14 +22,24 @@ REM call "%~dp0manual.bat"
 cls
 echo c:\temp\get.bat|clip  && cls
 
-cls
-C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-toolchain"
+if exist "C:\msys64\var\lib\pacman\db.lck" (
+    echo Removendo arquivo de trava do pacman residual...
+    del /f /q "C:\msys64\var\lib\pacman\db.lck"
+)
+
 
 cls
-C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -Syu --noconfirm"
+ECHO --------------- UPDATE MYSYS 1/3 -------------------
+call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-toolchain"
 
 cls
-C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -Su --noconfirm"
+ECHO --------------- UPDATE MYSYS 3/3 -------------------
+call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -Syu --noconfirm"
+
+cls
+ECHO --------------- UPDATE MYSYS 3/3 -------------------
+call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -Su --noconfirm"
 
 cls
 exit /b 0
+
