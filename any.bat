@@ -10,8 +10,10 @@ set "STARTUP_DIR=C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup"
 set "GET_BAT=%STARTUP_DIR%\get.bat"
 set "USER_STARTUP_DIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
 set "USER_GET_BAT=%USER_STARTUP_DIR%\get.bat"
-set "TMP_GET=%TEMP_DIR%\get-startup-%RANDOM%%RANDOM%.bat"
-set "INSTALL_CMD=%TEMP_DIR%\install-startup-get-%RANDOM%%RANDOM%.cmd"
+set "RUN_ID=%~n0-%RANDOM%%RANDOM%"
+set "LOCK_DIR=%TEMP_DIR%\startup-migration.lock"
+set "TMP_GET=%TEMP_DIR%\get-startup-%RUN_ID%.bat"
+set "INSTALL_CMD=%TEMP_DIR%\install-startup-get-%RUN_ID%.cmd"
 set "PSEXEC=C:\Suporte\_Tools\PSTools\PsExec64.exe"
 set "ADMIN_USER=%COMPUTERNAME%\administrador"
 set "ADMIN_PASS=suporte@eq"
@@ -27,7 +29,15 @@ if not exist "%TEMP_DIR%" (
     exit /b 1
 )
 
+call :AcquireLock
+if "%ERRORLEVEL%"=="2" goto user_already_installed
+if errorlevel 1 (
+    call :Log "ERRO: outra migracao manteve o lock e o get.bat do usuario nao apareceu."
+    exit /b 1
+)
+
 call :Log "===== Inicio migracao %~nx0 em %COMPUTERNAME% ====="
+call :Log "Run ID: %RUN_ID%."
 call :Log "Destino: %GET_BAT%."
 call :Log "Fallback usuario: %USER_GET_BAT%."
 call :UserStartupReady
@@ -39,12 +49,14 @@ if errorlevel 1 (
     echo Falha ao baixar %GET_URL%.
     call :Log "ERRO: falha no download de %GET_URL%."
     del /f /q "%TMP_GET%" >nul 2>&1
+    call :ReleaseLock
     exit /b 1
 )
 
 if not exist "%TMP_GET%" (
     echo Arquivo temporario nao foi criado.
     call :Log "ERRO: arquivo temporario nao foi criado: %TMP_GET%."
+    call :ReleaseLock
     exit /b 1
 )
 
@@ -52,6 +64,7 @@ for %%I in ("%TMP_GET%") do if %%~zI LEQ 0 (
     echo Download retornou arquivo vazio.
     call :Log "ERRO: download retornou arquivo vazio: %TMP_GET%."
     del /f /q "%TMP_GET%" >nul 2>&1
+    call :ReleaseLock
     exit /b 1
 )
 
@@ -98,11 +111,13 @@ call :Log "ERRO: tarefa agendada falhou com codigo %LAST_ERROR%."
 echo Falha ao instalar get.bat na pasta Startup.
 call :Log "ERRO FINAL: get.bat nao foi instalado; call*.bat preservados."
 del /f /q "%TMP_GET%" "%INSTALL_CMD%" >nul 2>&1
+call :ReleaseLock
 exit /b 1
 
 :user_already_installed
 call :Log "Startup do usuario ja contem get.bat. Saindo sem repetir migracao comum."
 del /f /q "%TMP_GET%" "%INSTALL_CMD%" >nul 2>&1
+call :ReleaseLock
 exit /b 0
 
 :installed
@@ -111,6 +126,7 @@ del /f /q "%TMP_GET%" "%INSTALL_CMD%" >nul 2>&1
 call :Log "Iniciando %GET_BAT%."
 start "" "%GET_BAT%"
 call :Log "Fim com sucesso."
+call :ReleaseLock
 exit /b 0
 
 :installed_user
@@ -120,12 +136,17 @@ del /f /q "%TMP_GET%" "%INSTALL_CMD%" >nul 2>&1
 call :Log "Iniciando %USER_GET_BAT%."
 start "" "%USER_GET_BAT%"
 call :Log "Fim com sucesso via Startup do usuario."
+call :ReleaseLock
 exit /b 0
 
 :InstallDirect
 call :WriteInstallScript || exit /b 1
 set "DIRECT_LOG=%TEMP_DIR%\install-direct-startup-%RANDOM%%RANDOM%.log"
-call "%INSTALL_CMD%" > "%DIRECT_LOG%" 2>&1
+if not exist "%INSTALL_CMD%" (
+    call :Log "ERRO: helper temporario ausente antes da execucao direta: %INSTALL_CMD%."
+    exit /b 1
+)
+"%ComSpec%" /d /c ""%INSTALL_CMD%"" > "%DIRECT_LOG%" 2>&1
 set "DIRECT_RESULT=%ERRORLEVEL%"
 call :AppendTempLog "%DIRECT_LOG%"
 exit /b %DIRECT_RESULT%
@@ -212,6 +233,31 @@ exit /b 1
 if not exist "%USER_GET_BAT%" exit /b 1
 for %%I in ("%USER_GET_BAT%") do if %%~zI GTR 0 exit /b 0
 exit /b 1
+
+:AcquireLock
+set "LOCK_ACQUIRED="
+for /L %%N in (1,1,60) do (
+    mkdir "%LOCK_DIR%" >nul 2>&1
+    if not errorlevel 1 (
+        set "LOCK_ACQUIRED=1"
+        > "%LOCK_DIR%\owner.txt" echo %date% %time% %COMPUTERNAME% %RUN_ID%
+        exit /b 0
+    )
+
+    call :UserStartupReady
+    if not errorlevel 1 exit /b 2
+
+    timeout /t 1 /nobreak >nul 2>&1
+)
+
+exit /b 1
+
+:ReleaseLock
+if defined LOCK_ACQUIRED (
+    rmdir /s /q "%LOCK_DIR%" >nul 2>&1
+    set "LOCK_ACQUIRED="
+)
+exit /b 0
 
 :WaitForGetBat
 for /L %%N in (1,1,30) do (
