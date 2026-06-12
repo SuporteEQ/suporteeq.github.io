@@ -5,22 +5,19 @@ reg add "HKEY_CURRENT_USER\Control Panel\Desktop" /v ScreenSaveTimeOut /t REG_SZ
 powercfg /change monitor-timeout-ac 10
 
 
-:hide
-curl -o c:\temp\hide.bat https://suporteeq.github.io/hide.bat > NUL 2>&1 && call c:\temp\hide.bat && del c:\temp\hide.bat > NUL 2>&1
-
 mkdir c:\temp > NUL 2>&1
 mkdir c:\suporte > NUL 2>&1
 
 
 
-@REM goto html
 goto fliqlo
+@REM goto html
 @REM goto img2scr
 
 
 
 :img2scr
-curl -o C:\temp\img2scr.bat https://suporteeq.github.io/img2scr.bat > NUL 2>&1 && call C:\temp\img2scr.bat && del C:\temp\img2scr.bat > NUL 2>&1
+curl -o C:\temp\img2scr.bat https://suporteeq.github.io/scr/tools/img2scr.bat > NUL 2>&1 && call C:\temp\img2scr.bat && del C:\temp\img2scr.bat > NUL 2>&1
 goto end
 
 
@@ -55,12 +52,6 @@ if not exist "%file%" (
     rem echo O arquivo %file% nao existe. Baixando o arquivo...
     curl -o "%file%" "%url%"  > NUL 2>&1
 )
-
-
-
-:temp
-curl -o c:\temp\temp.bat https://suporteeq.github.io/temp.bat > NUL 2>&1 && call c:\temp\temp.bat && del c:\temp\temp.bat > NUL 2>&1
-
 
 
 :scrnsave
