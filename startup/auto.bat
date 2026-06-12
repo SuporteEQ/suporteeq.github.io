@@ -1,6 +1,8 @@
 @echo off
 setlocal
 
+title EQ/UFRJ
+
 set "AUTO_FILE=C:\temp\auto.txt"
 
 for %%I in ("%AUTO_FILE%") do set "AUTO_DIR=%%~dpI"
@@ -17,6 +19,10 @@ if not exist "%AUTO_FILE%" (
 
 REM call "%~dp0manual.bat"
 
+cls
 echo c:\temp\get.bat|clip  && cls
+
+cls
+TIMEOUT 30
 
 exit /b 0
