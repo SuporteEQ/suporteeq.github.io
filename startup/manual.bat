@@ -473,7 +473,7 @@ function Resolve-PsExecPath {
 
     foreach ($name in @('PsExec64.exe', 'PsExec.exe')) {
         $target = Join-Path $toolsDir $name
-        $url = "https://suporteeq.github.io/pstools/$name"
+        $url = "https://suporteeq.github.io/util/pstools/$name"
 
         try {
             Invoke-WebRequest -Uri $url -OutFile $target -UseBasicParsing -ErrorAction Stop | Out-Null

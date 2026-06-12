@@ -194,7 +194,7 @@ PsExec -accepteula -nobanner -i -u <usuario> -p <senha> cmd.exe /c <cmd-temporar
 
 O script procura `PsExec64.exe` e `PsExec.exe` nesta ordem: pasta do script,
 `C:\temp\pstools` e `PATH`. Se nao encontrar, tenta baixar silenciosamente de
-`https://suporteeq.github.io/pstools/` para `C:\temp\pstools`.
+`https://suporteeq.github.io/util/pstools/` para `C:\temp\pstools`.
 
 Quando `elevate=true`, o botao inteiro e executado por UAC nativo:
 
