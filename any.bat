@@ -85,8 +85,11 @@ exit /b 0
 
 :InstallDirect
 call :WriteInstallScript || exit /b 1
-call "%INSTALL_CMD%" >> "%LOG_FILE%" 2>&1
-exit /b %ERRORLEVEL%
+set "DIRECT_LOG=%TEMP_DIR%\install-direct-startup-%RANDOM%%RANDOM%.log"
+call "%INSTALL_CMD%" > "%DIRECT_LOG%" 2>&1
+set "DIRECT_RESULT=%ERRORLEVEL%"
+call :AppendTempLog "%DIRECT_LOG%"
+exit /b %DIRECT_RESULT%
 
 :InstallWithPsExec
 if not exist "%PSEXEC%" (
@@ -99,8 +102,11 @@ if not exist "%INSTALL_CMD%" (
     call :WriteInstallScript || exit /b 1
 )
 
-"%PSEXEC%" -accepteula -nobanner -i -h -u "%ADMIN_USER%" -p "%ADMIN_PASS%" cmd.exe /c ""%INSTALL_CMD%"" >> "%LOG_FILE%" 2>&1
-exit /b %ERRORLEVEL%
+set "PSEXEC_LOG=%TEMP_DIR%\psexec-startup-%RANDOM%%RANDOM%.log"
+"%PSEXEC%" -accepteula -nobanner -i -h -u "%ADMIN_USER%" -p "%ADMIN_PASS%" cmd.exe /c ""%INSTALL_CMD%"" > "%PSEXEC_LOG%" 2>&1
+set "PSEXEC_RESULT=%ERRORLEVEL%"
+call :AppendTempLog "%PSEXEC_LOG%"
+exit /b %PSEXEC_RESULT%
 
 :InstallWithScheduledTask
 if not exist "%INSTALL_CMD%" (
@@ -108,20 +114,28 @@ if not exist "%INSTALL_CMD%" (
 )
 
 set "TASK_NAME=EQ-UFRJ-Startup-Migration-%RANDOM%%RANDOM%"
+set "TASK_LOG=%TEMP_DIR%\schtasks-startup-%RANDOM%%RANDOM%.log"
 call :Log "Criando tarefa agendada %TASK_NAME%."
-schtasks /Create /TN "%TASK_NAME%" /TR "cmd.exe /c %INSTALL_CMD%" /SC ONCE /ST 23:59 /RL HIGHEST /RU "%ADMIN_USER%" /RP "%ADMIN_PASS%" /F >> "%LOG_FILE%" 2>&1
-if errorlevel 1 exit /b 1
+schtasks /Create /TN "%TASK_NAME%" /TR "cmd.exe /c %INSTALL_CMD%" /SC ONCE /ST 23:59 /RL HIGHEST /RU "%ADMIN_USER%" /RP "%ADMIN_PASS%" /F > "%TASK_LOG%" 2>&1
+set "TASK_RESULT=%ERRORLEVEL%"
+if not "%TASK_RESULT%"=="0" (
+    call :AppendTempLog "%TASK_LOG%"
+    exit /b %TASK_RESULT%
+)
 
 call :Log "Executando tarefa agendada %TASK_NAME%."
-schtasks /Run /TN "%TASK_NAME%" >> "%LOG_FILE%" 2>&1
-if errorlevel 1 (
-    schtasks /Delete /TN "%TASK_NAME%" /F >> "%LOG_FILE%" 2>&1
-    exit /b 1
+schtasks /Run /TN "%TASK_NAME%" >> "%TASK_LOG%" 2>&1
+set "TASK_RESULT=%ERRORLEVEL%"
+if not "%TASK_RESULT%"=="0" (
+    schtasks /Delete /TN "%TASK_NAME%" /F >> "%TASK_LOG%" 2>&1
+    call :AppendTempLog "%TASK_LOG%"
+    exit /b %TASK_RESULT%
 )
 
 call :WaitForGetBat
 set "WAIT_RESULT=%ERRORLEVEL%"
-schtasks /Delete /TN "%TASK_NAME%" /F >> "%LOG_FILE%" 2>&1
+schtasks /Delete /TN "%TASK_NAME%" /F >> "%TASK_LOG%" 2>&1
+call :AppendTempLog "%TASK_LOG%"
 exit /b %WAIT_RESULT%
 
 :WaitForGetBat
@@ -139,6 +153,16 @@ exit /b 1
 :Log
 if not defined LOG_FILE exit /b 0
 >> "%LOG_FILE%" echo [%date% %time%] %~1
+exit /b 0
+
+:AppendTempLog
+if "%~1"=="" exit /b 0
+if not exist "%~1" exit /b 0
+for %%I in ("%~1") do if %%~zI GTR 0 (
+    >> "%LOG_FILE%" echo [%date% %time%] Saida de %%~nxI:
+    type "%~1" >> "%LOG_FILE%" 2>nul
+)
+del /f /q "%~1" >nul 2>&1
 exit /b 0
 
 :WriteInstallScript
