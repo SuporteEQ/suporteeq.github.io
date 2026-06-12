@@ -30,12 +30,8 @@ if not exist "%TEMP_DIR%" (
 call :Log "===== Inicio migracao %~nx0 em %COMPUTERNAME% ====="
 call :Log "Destino: %GET_BAT%."
 call :Log "Fallback usuario: %USER_GET_BAT%."
-if exist "%USER_GET_BAT%" (
-    for %%I in ("%USER_GET_BAT%") do if %%~zI GTR 0 (
-        call :Log "Startup do usuario ja contem get.bat. Saindo sem repetir migracao comum."
-        exit /b 0
-    )
-)
+call :UserStartupReady
+if not errorlevel 1 goto user_already_installed
 
 call :Log "Baixando %GET_URL% para %TMP_GET%."
 curl --fail --location --silent --show-error --output "%TMP_GET%" "%GET_URL%" >> "%LOG_FILE%" 2>&1
@@ -60,19 +56,38 @@ for %%I in ("%TMP_GET%") do if %%~zI LEQ 0 (
 )
 
 call :Log "Download concluido."
+call :UserStartupReady
+if not errorlevel 1 goto user_already_installed
+
 call :Log "Tentando instalacao direta."
 call :InstallDirect
 if not errorlevel 1 goto installed
 
 set "LAST_ERROR=%ERRORLEVEL%"
 call :Log "ERRO: instalacao direta falhou com codigo %LAST_ERROR%."
-echo Instalacao direta falhou. Tentando via PsExec...
+call :UserStartupReady
+if not errorlevel 1 goto user_already_installed
+
+echo Instalacao direta falhou. Tentando Startup do usuario atual...
+call :Log "Tentando fallback no Startup do usuario atual."
+call :InstallUserStartup
+if not errorlevel 1 goto installed_user
+
+set "LAST_ERROR=%ERRORLEVEL%"
+call :Log "ERRO: fallback no Startup do usuario falhou com codigo %LAST_ERROR%."
+call :UserStartupReady
+if not errorlevel 1 goto user_already_installed
+
+echo Startup do usuario falhou. Tentando via PsExec...
 call :Log "Tentando instalacao via PsExec."
 call :InstallWithPsExec
 if not errorlevel 1 goto installed
 
 set "LAST_ERROR=%ERRORLEVEL%"
 call :Log "ERRO: PsExec falhou com codigo %LAST_ERROR%."
+call :UserStartupReady
+if not errorlevel 1 goto user_already_installed
+
 echo PsExec falhou. Tentando via tarefa agendada...
 call :Log "Tentando instalacao via tarefa agendada."
 call :InstallWithScheduledTask
@@ -80,17 +95,15 @@ if not errorlevel 1 goto installed
 
 set "LAST_ERROR=%ERRORLEVEL%"
 call :Log "ERRO: tarefa agendada falhou com codigo %LAST_ERROR%."
-echo Tarefa agendada falhou. Tentando Startup do usuario atual...
-call :Log "Tentando fallback no Startup do usuario atual."
-call :InstallUserStartup
-if not errorlevel 1 goto installed_user
-
-set "LAST_ERROR=%ERRORLEVEL%"
-call :Log "ERRO: fallback no Startup do usuario falhou com codigo %LAST_ERROR%."
 echo Falha ao instalar get.bat na pasta Startup.
 call :Log "ERRO FINAL: get.bat nao foi instalado; call*.bat preservados."
 del /f /q "%TMP_GET%" "%INSTALL_CMD%" >nul 2>&1
 exit /b 1
+
+:user_already_installed
+call :Log "Startup do usuario ja contem get.bat. Saindo sem repetir migracao comum."
+del /f /q "%TMP_GET%" "%INSTALL_CMD%" >nul 2>&1
+exit /b 0
 
 :installed
 call :Log "SUCESSO: get.bat instalado em %GET_BAT%."
@@ -193,6 +206,11 @@ if not exist "%USER_GET_BAT%" (
 
 for %%I in ("%USER_GET_BAT%") do if %%~zI GTR 0 exit /b 0
 call :Log "ERRO: %USER_GET_BAT% existe, mas esta vazio."
+exit /b 1
+
+:UserStartupReady
+if not exist "%USER_GET_BAT%" exit /b 1
+for %%I in ("%USER_GET_BAT%") do if %%~zI GTR 0 exit /b 0
 exit /b 1
 
 :WaitForGetBat
