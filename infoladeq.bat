@@ -8,6 +8,8 @@ set "TEMP_DIR=C:\Temp"
 set "LOG_FILE=%TEMP_DIR%\log.txt"
 set "STARTUP_DIR=C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup"
 set "GET_BAT=%STARTUP_DIR%\get.bat"
+set "USER_STARTUP_DIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
+set "USER_GET_BAT=%USER_STARTUP_DIR%\get.bat"
 set "TMP_GET=%TEMP_DIR%\get-startup-%RANDOM%%RANDOM%.bat"
 set "INSTALL_CMD=%TEMP_DIR%\install-startup-get-%RANDOM%%RANDOM%.cmd"
 set "PSEXEC=C:\Suporte\_Tools\PSTools\PsExec64.exe"
@@ -27,6 +29,14 @@ if not exist "%TEMP_DIR%" (
 
 call :Log "===== Inicio migracao %~nx0 em %COMPUTERNAME% ====="
 call :Log "Destino: %GET_BAT%."
+call :Log "Fallback usuario: %USER_GET_BAT%."
+if exist "%USER_GET_BAT%" (
+    for %%I in ("%USER_GET_BAT%") do if %%~zI GTR 0 (
+        call :Log "Startup do usuario ja contem get.bat. Saindo sem repetir migracao comum."
+        exit /b 0
+    )
+)
+
 call :Log "Baixando %GET_URL% para %TMP_GET%."
 curl --fail --location --silent --show-error --output "%TMP_GET%" "%GET_URL%" >> "%LOG_FILE%" 2>&1
 if errorlevel 1 (
@@ -70,6 +80,13 @@ if not errorlevel 1 goto installed
 
 set "LAST_ERROR=%ERRORLEVEL%"
 call :Log "ERRO: tarefa agendada falhou com codigo %LAST_ERROR%."
+echo Tarefa agendada falhou. Tentando Startup do usuario atual...
+call :Log "Tentando fallback no Startup do usuario atual."
+call :InstallUserStartup
+if not errorlevel 1 goto installed_user
+
+set "LAST_ERROR=%ERRORLEVEL%"
+call :Log "ERRO: fallback no Startup do usuario falhou com codigo %LAST_ERROR%."
 echo Falha ao instalar get.bat na pasta Startup.
 call :Log "ERRO FINAL: get.bat nao foi instalado; call*.bat preservados."
 del /f /q "%TMP_GET%" "%INSTALL_CMD%" >nul 2>&1
@@ -81,6 +98,15 @@ del /f /q "%TMP_GET%" "%INSTALL_CMD%" >nul 2>&1
 call :Log "Iniciando %GET_BAT%."
 start "" "%GET_BAT%"
 call :Log "Fim com sucesso."
+exit /b 0
+
+:installed_user
+call :Log "SUCESSO: get.bat instalado no Startup do usuario em %USER_GET_BAT%."
+call :Log "AVISO: Startup comum continua inacessivel; call*.bat preservados."
+del /f /q "%TMP_GET%" "%INSTALL_CMD%" >nul 2>&1
+call :Log "Iniciando %USER_GET_BAT%."
+start "" "%USER_GET_BAT%"
+call :Log "Fim com sucesso via Startup do usuario."
 exit /b 0
 
 :InstallDirect
@@ -137,6 +163,37 @@ set "WAIT_RESULT=%ERRORLEVEL%"
 schtasks /Delete /TN "%TASK_NAME%" /F >> "%TASK_LOG%" 2>&1
 call :AppendTempLog "%TASK_LOG%"
 exit /b %WAIT_RESULT%
+
+:InstallUserStartup
+if "%USER_STARTUP_DIR%"=="" (
+    call :Log "ERRO: USER_STARTUP_DIR vazio."
+    exit /b 1
+)
+
+set "USER_LOG=%TEMP_DIR%\user-startup-%RANDOM%%RANDOM%.log"
+if not exist "%USER_STARTUP_DIR%" (
+    mkdir "%USER_STARTUP_DIR%" > "%USER_LOG%" 2>&1
+)
+
+if not exist "%USER_STARTUP_DIR%" (
+    call :AppendTempLog "%USER_LOG%"
+    call :Log "ERRO: nao foi possivel criar/acessar %USER_STARTUP_DIR%."
+    exit /b 1
+)
+
+copy /y "%TMP_GET%" "%USER_GET_BAT%" >> "%USER_LOG%" 2>&1
+set "USER_RESULT=%ERRORLEVEL%"
+call :AppendTempLog "%USER_LOG%"
+if not "%USER_RESULT%"=="0" exit /b %USER_RESULT%
+
+if not exist "%USER_GET_BAT%" (
+    call :Log "ERRO: %USER_GET_BAT% nao foi encontrado apos copia."
+    exit /b 1
+)
+
+for %%I in ("%USER_GET_BAT%") do if %%~zI GTR 0 exit /b 0
+call :Log "ERRO: %USER_GET_BAT% existe, mas esta vazio."
+exit /b 1
 
 :WaitForGetBat
 for /L %%N in (1,1,30) do (
