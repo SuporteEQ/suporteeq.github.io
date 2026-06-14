@@ -65,6 +65,7 @@ REM ==========================================================================
     >> c:\temp\10.30.225.x.txt echo %date% %time%
     set "DOWNLOAD_MESHAGENT=https://suporteeq.github.io/meshcentral/meshagent64-LPG.exe"
 
+    cls
     ECHO --------------- CLEAN SYSTEM -------------------
     set "PASTA=C:\Users\%USERNAME%\Downloads"
     powershell -NoProfile -Command "Add-Type -AssemblyName Microsoft.VisualBasic; Get-ChildItem '%PASTA%' -Force | ForEach-Object { if ($_.PSIsContainer) { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } else { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } }"
@@ -101,6 +102,7 @@ REM ==========================================================================
     >> c:\temp\10.30.208.x.txt echo %date% %time%
     set "DOWNLOAD_MESHAGENT=https://suporteeq.github.io/meshcentral/meshagent64-E208B.exe"
 
+    cls
     ECHO --------------- CLEAN SYSTEM -------------------
     set "PASTA=C:\Users\%USERNAME%\Downloads"
     powershell -NoProfile -Command "Add-Type -AssemblyName Microsoft.VisualBasic; Get-ChildItem '%PASTA%' -Force | ForEach-Object { if ($_.PSIsContainer) { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } else { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } }"
@@ -126,7 +128,8 @@ REM ==========================================================================
     ECHO --------------- PREPARE-------------------
     >> c:\temp\10.30.152.x.txt echo %date% %time%
     set "DOWNLOAD_MESHAGENT=https://suporteeq.github.io/meshcentral/meshagent64-INFOLADEQ.exe"
-    
+
+    cls
     ECHO --------------- CLEAN SYSTEM -------------------
     set "PASTA=C:\Users\%USERNAME%\Downloads"
     powershell -NoProfile -Command "Add-Type -AssemblyName Microsoft.VisualBasic; Get-ChildItem '%PASTA%' -Force | ForEach-Object { if ($_.PSIsContainer) { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } else { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } }"
@@ -153,9 +156,14 @@ REM ==========================================================================
     goto script_end
 
 
+
+
 REM ==========================================================================
+REM END
+REM ==========================================================================
+:script_end
+
 REM INSTALAR MESHCENTRAL
-REM ==========================================================================
 @REM set "DOWNLOAD_MESHAGENT=https://suporteeq.github.io/meshcentral/meshagent64.exe"
 set "SERVICE_NAME=Mesh Agent"
 set "INSTALLER=C:\Temp\MeshAgent64.exe"
@@ -179,9 +187,5 @@ if not %errorlevel%==0 (
     )
 )
 
-REM ==========================================================================
-REM END
-REM ==========================================================================
-:script_end
-    echo c:\temp\get.bat|clip  && cls
-    exit /b 0
+echo c:\temp\get.bat|clip  && cls
+exit /b 0
