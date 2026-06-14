@@ -51,7 +51,6 @@ if not %errorlevel%==0 (
     :: Se o instalador existir, executa a instalação
     if exist "%INSTALLER%" (
         psexec -accepteula -i -u Administrador -p suporte@eq "%INSTALLER%" -fullinstall
-        "%INSTALLER%" -fullinstall
     )
 )
 
