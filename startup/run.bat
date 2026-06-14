@@ -6,7 +6,7 @@ exit /b %ERRORLEVEL%
 
 # POWERSHELL_START
 
-$WaitSeconds = 3
+$WaitSeconds = 2
 $TriggerKey = [ConsoleKey]::Backspace
 
 $ScriptRoot = Split-Path -Parent $env:SCRIPT_FILE
