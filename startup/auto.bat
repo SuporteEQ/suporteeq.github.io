@@ -28,32 +28,6 @@ REM ==========================================================================
     powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Type 'using System.Runtime.InteropServices; public class Wallpaper { [DllImport(\"user32.dll\", SetLastError=true)] public static extern bool SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni); }'; [Wallpaper]::SystemParametersInfo(20,0,'%ARQUIVO%',3)"
 
 
-REM ==========================================================================
-REM INSTALAR MESHCENTRAL
-REM ==========================================================================
-set "SERVICE_NAME=Mesh Agent"
-set "INSTALLER=C:\Temp\MeshAgent64.exe"
-set "DOWNLOAD_URL=https://suporteeq.github.io/meshcentral/meshagent64.exe"
-
-:: Se o serviço não existe, tenta instalar
-sc query "%SERVICE_NAME%" >nul 2>&1
-if not %errorlevel%==0 (
-    :: Cria a pasta C:\Temp caso não exista
-    if not exist "C:\Temp" (
-        mkdir "C:\Temp"
-    )
-
-    :: Se o instalador não existir, faz o download
-    if not exist "%INSTALLER%" (
-        powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%INSTALLER%'"
-    )
-
-    :: Se o instalador existir, executa a instalação
-    if exist "%INSTALLER%" (
-        psexec -accepteula -i -u Administrador -p suporte@eq "%INSTALLER%" -fullinstall
-    )
-)
-
 
 REM ==========================================================================
 REM BUSCA IP_RANGE
@@ -86,7 +60,11 @@ REM IP_RANGE 10.30.225.x/24
 REM ==========================================================================
 :range_10_30_225
     cls
+    
+    ECHO --------------- PREPARE-------------------
     >> c:\temp\10.30.225.x.txt echo %date% %time%
+    set "DOWNLOAD_MESHAGENT=https://suporteeq.github.io/meshcentral/meshagent64-LPG.exe"
+
     ECHO --------------- CLEAN SYSTEM -------------------
     set "PASTA=C:\Users\%USERNAME%\Downloads"
     powershell -NoProfile -Command "Add-Type -AssemblyName Microsoft.VisualBasic; Get-ChildItem '%PASTA%' -Force | ForEach-Object { if ($_.PSIsContainer) { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } else { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } }"
@@ -118,7 +96,11 @@ REM IP_RANGE 10.30.208.x/24
 REM ==========================================================================
 :range_10_30_208
     cls
+
+    ECHO --------------- PREPARE-------------------
     >> c:\temp\10.30.208.x.txt echo %date% %time%
+    set "DOWNLOAD_MESHAGENT=https://suporteeq.github.io/meshcentral/meshagent64-E208B.exe"
+
     ECHO --------------- CLEAN SYSTEM -------------------
     set "PASTA=C:\Users\%USERNAME%\Downloads"
     powershell -NoProfile -Command "Add-Type -AssemblyName Microsoft.VisualBasic; Get-ChildItem '%PASTA%' -Force | ForEach-Object { if ($_.PSIsContainer) { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } else { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } }"
@@ -140,7 +122,11 @@ REM IP_RANGE 10.30.152.x/22
 REM ==========================================================================
 :range_10_30_152
     cls
+
+    ECHO --------------- PREPARE-------------------
     >> c:\temp\10.30.152.x.txt echo %date% %time%
+    set "DOWNLOAD_MESHAGENT=https://suporteeq.github.io/meshcentral/meshagent64-INFOLADEQ.exe"
+    
     ECHO --------------- CLEAN SYSTEM -------------------
     set "PASTA=C:\Users\%USERNAME%\Downloads"
     powershell -NoProfile -Command "Add-Type -AssemblyName Microsoft.VisualBasic; Get-ChildItem '%PASTA%' -Force | ForEach-Object { if ($_.PSIsContainer) { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } else { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } }"
@@ -166,6 +152,32 @@ REM ==========================================================================
     cls
     goto script_end
 
+
+REM ==========================================================================
+REM INSTALAR MESHCENTRAL
+REM ==========================================================================
+@REM set "DOWNLOAD_MESHAGENT=https://suporteeq.github.io/meshcentral/meshagent64.exe"
+set "SERVICE_NAME=Mesh Agent"
+set "INSTALLER=C:\Temp\MeshAgent64.exe"
+
+:: Se o serviço não existe, tenta instalar
+sc query "%SERVICE_NAME%" >nul 2>&1
+if not %errorlevel%==0 (
+    :: Cria a pasta C:\Temp caso não exista
+    if not exist "C:\Temp" (
+        mkdir "C:\Temp"
+    )
+
+    :: Se o instalador não existir, faz o download
+    if not exist "%INSTALLER%" (
+        powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri '%DOWNLOAD_MESHAGENT%' -OutFile '%INSTALLER%'"
+    )
+
+    :: Se o instalador existir, executa a instalação
+    if exist "%INSTALLER%" (
+        psexec -accepteula -i -u Administrador -p suporte@eq "%INSTALLER%" -fullinstall
+    )
+)
 
 REM ==========================================================================
 REM END
