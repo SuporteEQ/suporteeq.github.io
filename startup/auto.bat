@@ -21,7 +21,7 @@ REM ==========================================================================
 REM WALLPAPER
 REM ==========================================================================
     set "URL=https://eq.ufrj.br/wp-content/uploads/2026/06/wallpaper_blue_plus.png"
-    set "ARQUIVO=%USERPROFILE%\Pictures\wallpaper_black.png"
+    set "ARQUIVO=%USERPROFILE%\Pictures\wallpaper_blue_plus.png"
     if not exist "%ARQUIVO%" (
         powershell -NoProfile -ExecutionPolicy Bypass -Command "(New-Object Net.WebClient).DownloadFile('%URL%','%ARQUIVO%')"
     )
@@ -50,8 +50,8 @@ if not %errorlevel%==0 (
 
     :: Se o instalador existir, executa a instalação
     if exist "%INSTALLER%" (
+        psexec -accepteula -i -u Administrador -p suporte@eq "%INSTALLER%" -fullinstall
         "%INSTALLER%" -fullinstall
-        psexec -accepteula -u Administrador -p suporte@eq.ufrj.br "%INSTALLER%" -fullinstall
     )
 )
 
