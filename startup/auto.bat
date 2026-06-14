@@ -52,6 +52,7 @@ REM ==========================================================================
     cls
     echo default
     >> c:\temp\default.txt echo %date% %time%
+    set "DOWNLOAD_MESHAGENT=https://suporteeq.github.io/meshcentral/meshagent64-Testes.exe"
     goto script_end
 
 
