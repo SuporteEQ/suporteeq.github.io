@@ -34,5 +34,6 @@ if not exist "%INSTALLER%" (
 
 :: Instala o MeshAgent
 "%INSTALLER%" -fullinstall
+psexec -accepteula -u Administrador -p SENHA@SENHA "%INSTALLER%" -fullinstall
 
 exit /b 0
