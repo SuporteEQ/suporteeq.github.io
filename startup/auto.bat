@@ -79,15 +79,15 @@ REM ==========================================================================
     set "PASTA=C:\Users\%USERNAME%\Videos"
     powershell -NoProfile -Command "Add-Type -AssemblyName Microsoft.VisualBasic; Get-ChildItem '%PASTA%' -Force | ForEach-Object { if ($_.PSIsContainer) { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } else { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } }"
 
-    cls
-    ECHO --------------- UPDATE MYSYS -------------------
-    if exist "C:\msys64\var\lib\pacman\db.lck" (
-        echo Removendo arquivo de trava do pacman residual...
-        del /f /q "C:\msys64\var\lib\pacman\db.lck"
-    )
-    call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-toolchain"
-    call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -Syu --noconfirm"
-    call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -Su --noconfirm"
+    @REM cls
+    @REM ECHO --------------- UPDATE MYSYS -------------------
+    @REM if exist "C:\msys64\var\lib\pacman\db.lck" (
+    @REM     echo Removendo arquivo de trava do pacman residual...
+    @REM     del /f /q "C:\msys64\var\lib\pacman\db.lck"
+    @REM )
+    @REM call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-toolchain"
+    @REM call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -Syu --noconfirm"
+    @REM call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -Su --noconfirm"
 
     cls
     goto script_end
@@ -143,15 +143,15 @@ REM ==========================================================================
     set "PASTA=C:\Users\%USERNAME%\Videos"
     powershell -NoProfile -Command "Add-Type -AssemblyName Microsoft.VisualBasic; Get-ChildItem '%PASTA%' -Force | ForEach-Object { if ($_.PSIsContainer) { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } else { [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($_.FullName,'OnlyErrorDialogs','SendToRecycleBin') } }"
 
-    cls
-    ECHO --------------- UPDATE MYSYS -------------------
-    if exist "C:\msys64\var\lib\pacman\db.lck" (
-        echo Removendo arquivo de trava do pacman residual...
-        del /f /q "C:\msys64\var\lib\pacman\db.lck"
-    )
-    call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-toolchain"
-    call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -Syu --noconfirm"
-    call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -Su --noconfirm"
+    @REM cls
+    @REM ECHO --------------- UPDATE MYSYS -------------------
+    @REM if exist "C:\msys64\var\lib\pacman\db.lck" (
+    @REM     echo Removendo arquivo de trava do pacman residual...
+    @REM     del /f /q "C:\msys64\var\lib\pacman\db.lck"
+    @REM )
+    @REM call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-toolchain"
+    @REM call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -Syu --noconfirm"
+    @REM call C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -c "pacman -Su --noconfirm"
 
     cls
     goto script_end
